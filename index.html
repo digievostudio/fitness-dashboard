@@ -3,1693 +3,1727 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Health Dashboard</title>
+  <title>Fitness Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600&family=Source+Serif+4:opsz,wght@8..60,300;8..60,400;8..60,600;8..60,700&family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Outfit:wght@100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
   <style>
-    /* ═══════════════════════════════════════
-       BASE RESET & SHARED
-    ═══════════════════════════════════════ */
-    *{margin:0;padding:0;box-sizing:border-box}
-    html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:hidden}
-    body{min-height:100vh;min-height:100dvh}
-    .app{max-width:430px;margin:0 auto;min-height:100vh;min-height:100dvh;position:relative;overflow-x:hidden}
-    @media(min-width:600px){.app{max-width:100%}}
-
-    /* ═══════════════════════════════════════
-       STYLE TABS
-    ═══════════════════════════════════════ */
-    .style-tabs{
-      position:fixed;top:0;left:0;right:0;
-      width:100%;z-index:200;
-      display:flex;gap:0;
-      background:rgba(10,15,13,0.95);
-      backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-      border-bottom:1px solid rgba(255,255,255,0.06);
-      font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;
-      letter-spacing:0.5px;text-transform:uppercase;
-    }
-    .style-tab{
-      flex:1;padding:14px 4px 12px;text-align:center;
-      cursor:pointer;color:rgba(255,255,255,0.35);
-      transition:all 0.3s;border-bottom:2px solid transparent;
-      user-select:none;-webkit-tap-highlight-color:transparent;
-    }
-    .style-tab:active{opacity:0.7}
-    .style-tab.active{color:#fff;border-bottom-color:currentColor}
-
-    /* Per-theme tab override */
-    .theme-editorial .style-tabs{
-      background:rgba(252,249,242,0.97);
-      border-bottom-color:rgba(0,0,0,0.08);
-    }
-    .theme-editorial .style-tab{color:rgba(0,0,0,0.25)}
-    .theme-editorial .style-tab.active{color:#1a1a1a;border-bottom-color:#c0392b}
-
-    .theme-neon .style-tabs{
-      background:rgba(5,5,15,0.97);
-      border-bottom-color:rgba(0,255,255,0.08);
-    }
-    .theme-neon .style-tab{color:rgba(255,255,255,0.2)}
-    .theme-neon .style-tab.active{color:#00ffd5;border-bottom-color:#00ffd5}
-
-    /* Page area below tabs */
-    .theme-view{display:none;padding-top:44px}
-    .theme-view.active{display:block}
-
-    /* ═══════════════════════════════════════
-       THEME 1: FITBIT CLASSIC
-    ═══════════════════════════════════════ */
-    :root{
-      --f-bg:#0a0f0d;--f-bg2:#111916;--f-card:#162019;--f-card-h:#1a2a21;
-      --f-mint:#5ce0b8;--f-mint-d:rgba(92,224,184,0.15);
-      --f-lav:#c4a8ff;--f-lav-d:rgba(196,168,255,0.15);
-      --f-coral:#ff7f6b;--f-coral-d:rgba(255,127,107,0.15);
-      --f-gold:#ffd666;--f-gold-d:rgba(255,214,102,0.15);
-      --f-blue:#6bc5ff;--f-blue-d:rgba(107,197,255,0.15);
-      --f-t1:#e8efe9;--f-t2:#8a9b90;--f-t3:#5a6b60;
-      --f-ring-track:rgba(255,255,255,0.06);
-    }
-    .theme-fitbit{
-      font-family:'DM Sans',sans-serif;background:var(--f-bg);color:var(--f-t1);
-    }
-    .f-header{
-      display:flex;align-items:center;justify-content:center;
-      padding:14px 16px;position:relative;
-    }
-    .f-header-back{
-      position:absolute;left:16px;background:none;border:none;color:var(--f-t2);
-      font-size:20px;cursor:pointer;padding:8px;border-radius:50%;display:none;
-    }
-    .f-header-back.vis{display:flex}
-    .f-header-title{font-family:'Outfit',sans-serif;font-size:17px;font-weight:600;letter-spacing:-0.3px}
-
-    .f-content{padding:8px 16px 80px}
-    .f-section{font-family:'Outfit',sans-serif;font-size:15px;font-weight:600;color:var(--f-t2);padding:20px 4px 10px;letter-spacing:0.3px}
-
-    /* Overview ring */
-    .f-hero{display:flex;flex-direction:column;align-items:center;padding:28px 0 20px}
-    .f-ring-wrap{position:relative;width:min(200px, 52vw);height:min(200px, 52vw)}
-    .f-ring-wrap svg{width:100%;height:100%;transform:rotate(-90deg)}
-    .f-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
-    .f-ring-center .ri{font-size:18px;opacity:0.7}
-    .f-ring-center .rl{font-size:11px;color:var(--f-t2);text-transform:uppercase;letter-spacing:0.8px}
-    .f-ring-center .rv{font-family:'Outfit',sans-serif;font-size:clamp(18px, 7vw, 28px);font-weight:700;letter-spacing:-1px}
-    .f-ring-center .rs{font-size:12px;color:var(--f-t2)}
-
-    .f-quick{display:flex;justify-content:center;gap:28px;padding:16px 0 8px}
-    .f-qs{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
-    .f-qs-ic{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;transition:transform 0.2s}
-    .f-qs:active .f-qs-ic{transform:scale(0.92)}
-    .f-qs-v{font-family:'Outfit',sans-serif;font-size:14px;font-weight:600}
-    .f-qs-l{font-size:11px;color:var(--f-t2)}
-
-    /* Cards */
-    .f-card{
-      background:var(--f-card);border-radius:16px;padding:18px;margin-bottom:10px;
-      display:flex;align-items:center;justify-content:space-between;
-      cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;
-    }
-    .f-card::before{content:'';position:absolute;inset:0;border-radius:16px;border:1px solid rgba(255,255,255,0.03);pointer-events:none}
-    .f-card:active{transform:scale(0.985);background:var(--f-card-h)}
-    .f-card-l{display:flex;flex-direction:column;gap:4px;flex:1}
-    .f-card-t{font-size:13px;font-weight:500;color:var(--f-t2)}
-    .f-card-v{font-family:'Outfit',sans-serif;font-size:32px;font-weight:700;letter-spacing:-1.5px;line-height:1.1}
-    .f-card-v .u{font-size:16px;font-weight:400;color:var(--f-t2);letter-spacing:0;margin-left:2px}
-    .f-card-s{font-size:12px;color:var(--f-t3)}
-
-    .f-ring-sm{width:52px;height:52px;flex-shrink:0}
-    .f-ring-sm svg{width:100%;height:100%;transform:rotate(-90deg)}
-
-    .f-banner{background:var(--f-card);border-radius:16px;padding:14px 18px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px}
-    .f-banner-ic{font-size:18px;flex-shrink:0;margin-top:1px}
-    .f-banner-tx{font-size:13px;color:var(--f-t2);line-height:1.5}
-
-    .f-weekly{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
-    .f-bars{display:flex;gap:5px;align-items:flex-end;height:28px}
-    .f-bar{width:8px;height:28px;border-radius:3px}
-    .f-days{display:flex;gap:5px}
-    .f-day{width:8px;text-align:center;font-size:8px;color:var(--f-t3);font-weight:500}
-    .f-day.now{color:var(--f-mint)}
-
-    .f-hourly{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
-    .f-hrow{display:flex;gap:3px;align-items:flex-end;height:32px}
-    .f-hbar{width:6px;height:32px;border-radius:2px;background:rgba(255,255,255,0.06)}
-
-    /* Detail pages */
-    .f-detail{display:none}
-    .f-detail.act{display:block}
-    .f-main.hid{display:none}
-
-    .f-dhero{display:flex;flex-direction:column;align-items:center;padding:32px 0 24px}
-    .f-dring{position:relative;width:160px;height:160px;margin-bottom:16px}
-    .f-dring svg{width:100%;height:100%;transform:rotate(-90deg)}
-    .f-dring-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-    .f-dv{font-family:'Outfit',sans-serif;font-size:44px;font-weight:700;letter-spacing:-2px;line-height:1}
-    .f-du{font-size:16px;color:var(--f-t2);margin-top:2px}
-    .f-dsub{font-size:13px;color:var(--f-t2);text-align:center}
-
-    .f-dgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 0 16px}
-    .f-dstat{background:var(--f-card);border-radius:14px;padding:16px;position:relative;overflow:hidden}
-    .f-dstat::before{content:'';position:absolute;inset:0;border-radius:14px;border:1px solid rgba(255,255,255,0.03);pointer-events:none}
-    .f-dstat.full{grid-column:1/-1}
-    .f-dl{font-size:11px;color:var(--f-t3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
-    .f-ddv{font-family:'Outfit',sans-serif;font-size:24px;font-weight:700;letter-spacing:-1px}
-    .f-dds{font-size:11px;color:var(--f-t3);margin-top:2px}
-
-    .f-graph{background:var(--f-card);border-radius:16px;padding:18px;margin-bottom:10px;position:relative;overflow:hidden}
-    .f-graph::before{content:'';position:absolute;inset:0;border-radius:16px;border:1px solid rgba(255,255,255,0.03);pointer-events:none}
-    .f-graph-t{font-size:13px;font-weight:500;color:var(--f-t2);margin-bottom:16px}
-    .f-mchart{height:80px;display:flex;align-items:flex-end;gap:3px}
-    .f-mbar{flex:1;border-radius:3px 3px 0 0;min-height:4px;transition:height 0.6s cubic-bezier(0.34,1.56,0.64,1)}
-    .f-clabels{display:flex;justify-content:space-between;margin-top:8px}
-    .f-clabel{font-size:9px;color:var(--f-t3)}
-
-    .f-stages{display:flex;flex-direction:column;gap:2px;margin-top:12px}
-    .f-stage{display:flex;align-items:center;gap:10px;padding:8px 0}
-    .f-stage-c{width:10px;height:10px;border-radius:3px;flex-shrink:0}
-    .f-stage-n{font-size:13px;color:var(--f-t2);flex:1}
-    .f-stage-v{font-family:'Outfit',sans-serif;font-size:14px;font-weight:600}
-
-    .f-range{height:4px;background:var(--f-ring-track);border-radius:2px;position:relative;margin:12px 0 4px}
-    .f-range-f{position:absolute;height:100%;border-radius:2px}
-    .f-range-m{position:absolute;top:-3px;width:10px;height:10px;border-radius:50%;border:2px solid var(--f-card);transform:translateX(-50%)}
-    .f-range-l{display:flex;justify-content:space-between;margin-top:4px}
-    .f-range-lb{font-size:9px;color:var(--f-t3)}
-
-    .f-hmr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--f-card);margin-bottom:2px;cursor:pointer;transition:background 0.2s}
-    .f-hmr:first-child{border-radius:16px 16px 0 0}
-    .f-hmr:last-child{border-radius:0 0 16px 16px;margin-bottom:10px}
-    .f-hmr:active{background:var(--f-card-h)}
-    .f-hml{display:flex;align-items:center;gap:12px}
-    .f-hmd{width:8px;height:8px;border-radius:50%}
-    .f-hmn{font-size:14px}
-    .f-hmv{font-family:'Outfit',sans-serif;font-size:15px;font-weight:600;color:var(--f-t2)}
-    .f-hma{color:var(--f-t3);font-size:12px;margin-left:8px}
-
-    .f-hr-chart{height:80px;position:relative}
-    .f-hr-chart svg{width:100%;height:100%}
-
-    .f-wbar{height:6px;background:var(--f-ring-track);border-radius:3px;margin-top:8px;overflow:hidden}
-    .f-wfill{height:100%;border-radius:3px}
-
-    .f-nav{
-      position:fixed;bottom:0;left:0;right:0;
-      width:100%;display:flex;justify-content:center;align-items:center;
-      padding:10px 0 calc(10px + env(safe-area-inset-bottom,0px));
-      background:rgba(10,15,13,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-      border-top:1px solid rgba(255,255,255,0.04);z-index:100;
-    }
-    .f-nav-i{
-      display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;
-      background:none;border:none;color:var(--f-t3);font-size:11px;font-weight:500;
-      cursor:pointer;padding:4px 16px;transition:color 0.2s;
-    }
-    .f-nav-i.on{color:var(--f-mint)}
-    .f-nav-ic{font-size:20px}
-
-    /* Colors */
-    .tc-m{color:var(--f-mint)}.tc-l{color:var(--f-lav)}.tc-c{color:var(--f-coral)}.tc-g{color:var(--f-gold)}.tc-b{color:var(--f-blue)}
-    .bg-md{background:var(--f-mint-d)}.bg-ld{background:var(--f-lav-d)}.bg-cd{background:var(--f-coral-d)}.bg-gd{background:var(--f-gold-d)}.bg-bd{background:var(--f-blue-d)}
-
-    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-    /* Ring animation — use transition instead of keyframes for cross-browser compat.
-       Set stroke-dashoffset to circumference initially, JS/CSS sets final value. */
-    .ring-a{
-      transition:stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1);
-    }
-    .fade-up{animation:fadeUp 0.4s ease}
-    .f-enter{animation:slideIn 0.3s ease forwards}
-    @keyframes slideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
-
-    /* ═══════════════════════════════════════
-       THEME 2: EDITORIAL / MAGAZINE
-    ═══════════════════════════════════════ */
-    .theme-editorial{
-      font-family:'Source Serif 4',Georgia,serif;
-      background:#fcf9f2;color:#1a1a1a;
-    }
-    .theme-editorial .e-content{padding:12px 20px 40px}
-
-    .e-date{
-      font-family:'DM Sans',sans-serif;font-size:10px;font-weight:600;
-      text-transform:uppercase;letter-spacing:2px;color:#999;
-      padding:16px 0 4px;border-bottom:2px solid #1a1a1a;margin-bottom:20px;
-    }
-    .e-date span{color:#c0392b;margin-left:8px}
-
-    .e-headline{
-      font-family:'Playfair Display',serif;font-size:32px;font-weight:900;
-      line-height:1.08;letter-spacing:-0.5px;margin-bottom:4px;
-      color:#0d0d0d;
-    }
-    .e-subhead{
-      font-family:'DM Sans',sans-serif;font-size:12px;font-weight:400;
-      color:#888;margin-bottom:24px;letter-spacing:0.3px;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    /* Editorial hero: big number with context */
-    .e-hero-grid{
-      display:grid;grid-template-columns:1fr 1fr;gap:0;
-      border-top:1px solid #ddd;border-bottom:1px solid #ddd;
-      margin-bottom:24px;
-    }
-    .e-hero-cell{
-      padding:20px 16px;
-      border-right:1px solid #eee;
-    }
-    .e-hero-cell:nth-child(2n){border-right:none}
-    .e-hero-cell:nth-child(n+3){border-top:1px solid #eee}
-    .e-hero-num{
-      font-family:'Playfair Display',serif;font-size:36px;font-weight:800;
-      line-height:1;letter-spacing:-2px;word-break:break-all;
-    }
-    .e-hero-num .e-unit{
-      font-size:16px;font-weight:400;color:#999;letter-spacing:0;margin-left:2px;
-      font-family:'Source Serif 4',serif;
-    }
-    .e-hero-label{
-      font-family:'DM Sans',sans-serif;font-size:10px;font-weight:600;
-      text-transform:uppercase;letter-spacing:1.5px;color:#aaa;margin-bottom:6px;
-    }
-    .e-hero-note{font-size:12px;color:#999;margin-top:4px;font-style:italic}
+    :root {
+      --fitbit-bg: #0b0e11;
+      --fitbit-card: #1a1f25;
+      --fitbit-text: #ffffff;
+      --fitbit-text-dim: #8b95a5;
+      --fitbit-accent: #00d4ff;
+      --fitbit-border: #2a2f35;
 
-    /* Section divider */
-    .e-divider{
-      display:flex;align-items:center;gap:12px;margin:28px 0 16px;
-    }
-    .e-divider-line{flex:1;height:1px;background:#ddd}
-    .e-divider-text{
-      font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;
-      text-transform:uppercase;letter-spacing:2.5px;color:#c0392b;
+      --editorial-bg: #fffef9;
+      --editorial-card: #ffffff;
+      --editorial-text: #1a1a1a;
+      --editorial-text-dim: #666666;
+      --editorial-accent: #d63031;
+      --editorial-border: #e0e0e0;
+
+      --neon-bg: #000000;
+      --neon-card: #0a0a0a;
+      --neon-text: #00ffff;
+      --neon-text-dim: #00ffff88;
+      --neon-accent: #ff00ff;
+      --neon-border: #00ffff33;
     }
 
-    /* Data rows - newspaper style */
-    .e-row{
-      display:flex;justify-content:space-between;align-items:baseline;
-      padding:12px 0;border-bottom:1px solid #f0ece3;
-      cursor:pointer;transition:background 0.15s;
-    }
-    .e-row:hover{background:rgba(192,57,43,0.03)}
-    .e-row:active{background:rgba(192,57,43,0.06)}
-    .e-row-name{font-size:15px;font-weight:400;color:#333}
-    .e-row-val{
-      font-family:'Playfair Display',serif;font-size:20px;font-weight:700;
-      letter-spacing:-0.5px;text-align:right;
-    }
-    .e-row-unit{font-size:12px;font-weight:400;color:#999;margin-left:3px;font-family:'Source Serif 4',serif}
-    .e-row-sub{font-size:11px;color:#bbb;margin-top:1px;font-style:italic;text-align:right}
-
-    /* Red accent for featured */
-    .e-accent{color:#c0392b}
-    .e-accent-bg{background:#c0392b;color:#fff}
-
-    /* Pull quote style for insights */
-    .e-quote{
-      border-left:3px solid #c0392b;padding:16px 20px;margin:20px 0;
-      font-size:14px;font-style:italic;color:#555;line-height:1.6;
-      background:rgba(192,57,43,0.02);
-    }
-    .e-quote strong{color:#1a1a1a;font-style:normal}
-
-    /* Editorial bar chart */
-    .e-chart-wrap{margin:20px 0}
-    .e-chart-title{
-      font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;
-      text-transform:uppercase;letter-spacing:2px;color:#999;margin-bottom:12px;
-    }
-    .e-chart{display:flex;align-items:flex-end;gap:6px;height:60px}
-    .e-chart-bar{
-      flex:1;border-radius:2px 2px 0 0;min-height:3px;
-      background:#1a1a1a;transition:height 0.6s cubic-bezier(0.34,1.56,0.64,1);
-    }
-    .e-chart-bar.today{background:#c0392b}
-    .e-chart-labels{display:flex;justify-content:space-between;margin-top:6px}
-    .e-chart-label{font-family:'DM Sans',sans-serif;font-size:8px;color:#bbb;text-transform:uppercase;letter-spacing:1px}
-
-    /* 3-col compact stats */
-    .e-stat3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border:1px solid #eee;margin:16px 0}
-    .e-stat3-cell{padding:14px 12px;border-right:1px solid #eee;text-align:center}
-    .e-stat3-cell:last-child{border-right:none}
-    .e-stat3-num{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;letter-spacing:-1px}
-    .e-stat3-label{font-family:'DM Sans',sans-serif;font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:#aaa;margin-top:4px}
-
-    /* Health metrics tags */
-    .e-tags{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
-    .e-tag{
-      font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;
-      padding:6px 14px;border:1px solid #ddd;border-radius:20px;
-      color:#555;cursor:pointer;transition:all 0.2s;
-    }
-    .e-tag:hover{border-color:#c0392b;color:#c0392b}
-    .e-tag.in-range{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
-
-    /* Footer line */
-    .e-footer{
-      font-family:'DM Sans',sans-serif;font-size:9px;font-weight:400;
-      text-transform:uppercase;letter-spacing:2px;color:#ccc;
-      text-align:center;padding:32px 0 16px;
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--fitbit-bg);
+      color: var(--fitbit-text);
+      min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
     }
 
-    /* Detail pages editorial */
-    .e-detail{display:none}
-    .e-detail.act{display:block}
-    .e-main.hid{display:none}
-    .e-back{
-      font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;
-      text-transform:uppercase;letter-spacing:1.5px;color:#c0392b;
-      cursor:pointer;padding:16px 0 8px;display:none;
-    }
-    .e-back.vis{display:block}
-    .e-back:hover{text-decoration:underline}
-
-    .e-detail-hero{text-align:center;padding:24px 0 20px;border-bottom:2px solid #1a1a1a;margin-bottom:20px}
-    .e-detail-num{font-family:'Playfair Display',serif;font-size:64px;font-weight:900;letter-spacing:-3px;line-height:1}
-    .e-detail-unit{font-size:18px;color:#999;font-weight:400;font-family:'Source Serif 4',serif}
-    .e-detail-sub{font-size:13px;color:#999;margin-top:6px;font-style:italic}
-
-    /* ═══════════════════════════════════════
-       THEME 3: NEON PULSE / RETRO-FUTURISTIC
-    ═══════════════════════════════════════ */
-    .theme-neon{
-      font-family:'JetBrains Mono',monospace;
-      background:#05050f;color:#d0d0d0;
-      position:relative;
-    }
-    /* Scanline overlay */
-    .theme-neon::after{
-      content:'';position:fixed;inset:0;pointer-events:none;z-index:50;
-      background:repeating-linear-gradient(
-        0deg,transparent,transparent 2px,rgba(0,0,0,0.12) 2px,rgba(0,0,0,0.12) 4px
-      );
-    }
-    /* Ambient glow at top */
-    .theme-neon::before{
-      content:'';position:fixed;top:0;left:0;right:0;height:200px;pointer-events:none;z-index:49;
-      background:radial-gradient(ellipse at 50% 0%,rgba(0,255,213,0.06) 0%,transparent 70%);
+    /* === THEMES === */
+    body.theme-fitbit {
+      background: var(--fitbit-bg);
+      color: var(--fitbit-text);
+      font-family: 'DM Sans', sans-serif;
     }
 
-    .n-content{padding:12px 16px 40px;overflow-x:hidden}
-
-    .n-header{
-      display:flex;align-items:center;justify-content:space-between;
-      padding:12px 0 8px;border-bottom:1px solid rgba(0,255,213,0.15);
-      margin-bottom:16px;
-    }
-    .n-header-title{
-      font-size:10px;font-weight:700;text-transform:uppercase;
-      letter-spacing:3px;color:#00ffd5;
-    }
-    .n-header-time{font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:1px}
-
-    /* Neon glow text */
-    .n-glow{
-      text-shadow:0 0 6px currentColor,0 0 15px currentColor,0 0 30px currentColor;
-    }
-    .n-cyan{color:#00ffd5}
-    .n-mag{color:#ff00e5}
-    .n-amber{color:#ffaa00}
-    .n-red{color:#ff3366}
-    .n-white{color:#ffffff}
-
-    /* HUD stat blocks */
-    .n-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;overflow:hidden}
-    .n-stat{
-      background:rgba(0,255,213,0.03);border:1px solid rgba(0,255,213,0.1);
-      padding:12px 10px;position:relative;overflow:hidden;min-width:0;
-      cursor:pointer;transition:all 0.2s;
-      /* Corner brackets */
-      background-image:
-        linear-gradient(rgba(0,255,213,0.25),rgba(0,255,213,0.25)),
-        linear-gradient(rgba(0,255,213,0.25),rgba(0,255,213,0.25)),
-        linear-gradient(rgba(0,255,213,0.25),rgba(0,255,213,0.25)),
-        linear-gradient(rgba(0,255,213,0.25),rgba(0,255,213,0.25));
-      background-size:8px 1px,1px 8px,8px 1px,1px 8px;
-      background-position:top left,top left,bottom right,bottom right;
-      background-repeat:no-repeat;
-    }
-    .n-stat::before{
-      content:'';position:absolute;top:0;left:0;right:0;height:1px;
-      background:linear-gradient(90deg,transparent,rgba(0,255,213,0.3),transparent);
-    }
-    .n-stat:active{background:rgba(0,255,213,0.06);transform:scale(0.98)}
-    .n-stat.full{grid-column:1/-1}
-    .n-stat-label{
-      font-size:8px;font-weight:600;text-transform:uppercase;
-      letter-spacing:2px;color:rgba(255,255,255,0.3);margin-bottom:8px;
-    }
-    .n-stat-val{font-size:28px;font-weight:700;letter-spacing:-1px;line-height:1;text-shadow:0 0 4px currentColor}
-    .n-stat-unit{font-size:11px;font-weight:400;color:rgba(255,255,255,0.3);margin-left:4px}
-    .n-stat-sub{font-size:9px;color:rgba(255,255,255,0.2);margin-top:4px;letter-spacing:0.5px}
-
-    /* Neon section label */
-    .n-section{
-      font-size:8px;font-weight:700;text-transform:uppercase;
-      letter-spacing:3px;color:#00ffd5;
-      padding:20px 0 8px;
-      border-bottom:1px solid rgba(0,255,213,0.1);margin-bottom:12px;
-      display:flex;align-items:center;gap:8px;
-    }
-    .n-section::before{
-      content:'▸';font-size:10px;
+    body.theme-editorial {
+      background: var(--editorial-bg);
+      color: var(--editorial-text);
+      font-family: 'Source Serif 4', serif;
     }
 
-    /* Gauge bar */
-    .n-gauge{
-      height:4px;background:rgba(255,255,255,0.05);margin:10px 0 4px;
-      position:relative;overflow:hidden;border-radius:2px;
+    body.theme-neon {
+      background: var(--neon-bg);
+      color: var(--neon-text);
+      font-family: 'JetBrains Mono', monospace;
     }
-    .n-gauge-fill{
-      height:100%;position:absolute;left:0;top:0;border-radius:2px;
-      transition:width 0.8s cubic-bezier(0.4,0,0.2,1);
-      box-shadow:0 0 8px currentColor;
+
+    /* === SETUP SCREEN === */
+    #setupScreen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
     }
-    .n-gauge-labels{display:flex;justify-content:space-between}
-    .n-gauge-lb{font-size:8px;color:rgba(255,255,255,0.15);letter-spacing:1px}
 
-    /* Neon bar chart */
-    .n-chart{display:flex;align-items:flex-end;gap:4px;height:50px;margin:12px 0 6px}
-    .n-chart-bar{
-      flex:1;min-height:2px;
-      transition:height 0.6s cubic-bezier(0.34,1.56,0.64,1);
-      position:relative;
+    .setup-box {
+      background: var(--fitbit-card);
+      border: 1px solid var(--fitbit-border);
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 500px;
+      width: 100%;
     }
-    .n-chart-bar::after{
-      content:'';position:absolute;inset:0;
-      box-shadow:0 0 6px currentColor;opacity:0.3;
+
+    .theme-editorial .setup-box {
+      background: var(--editorial-card);
+      border-color: var(--editorial-border);
     }
-    .n-chart-labels{display:flex;justify-content:space-between}
-    .n-chart-lb{font-size:7px;color:rgba(255,255,255,0.15);letter-spacing:1px;text-transform:uppercase}
 
-    /* Neon data row */
-    .n-row{
-      display:flex;justify-content:space-between;align-items:center;
-      padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03);
-      cursor:pointer;transition:background 0.15s;
+    .theme-neon .setup-box {
+      background: var(--neon-card);
+      border-color: var(--neon-border);
+      box-shadow: 0 0 20px var(--neon-border);
     }
-    .n-row:active{background:rgba(0,255,213,0.04)}
-    .n-row-name{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.4)}
-    .n-row-val{font-size:14px;font-weight:700;letter-spacing:-0.5px;text-shadow:0 0 6px currentColor}
-    .n-row-arrow{font-size:10px;color:rgba(0,255,213,0.3);margin-left:8px}
 
-    /* Neon HR waveform */
-    .n-wave{height:60px;position:relative;margin:12px 0}
-    .n-wave svg{width:100%;height:100%}
-
-    /* Neon ring gauge */
-    .n-ring-wrap{position:relative;width:100px;height:100px;margin:0 auto 10px}
-    .n-ring-wrap svg{width:100%;height:100%;transform:rotate(-90deg)}
-    .n-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-    .n-ring-val{font-size:26px;font-weight:700;letter-spacing:-1px;line-height:1}
-    .n-ring-lb{font-size:8px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:2px;margin-top:4px}
-
-    /* Neon sleep stages */
-    .n-sleep-bar{display:flex;height:16px;margin:12px 0;gap:1px}
-    .n-sleep-bar>div{border-radius:1px}
-    .n-sleep-labels{display:flex;justify-content:space-between}
-    .n-sleep-lb{font-size:8px;color:rgba(255,255,255,0.15);letter-spacing:1px}
-
-    /* Neon detail */
-    .n-detail{display:none}
-    .n-detail.act{display:block}
-    .n-main.hid{display:none}
-    .n-back{
-      font-size:9px;font-weight:600;text-transform:uppercase;
-      letter-spacing:2px;color:#00ffd5;cursor:pointer;
-      padding:12px 0 8px;display:none;
+    .setup-box h1 {
+      font-size: 28px;
+      margin-bottom: 12px;
     }
-    .n-back.vis{display:block}
 
-    .n-detail-hero{text-align:center;padding:20px 0;border-bottom:1px solid rgba(0,255,213,0.1);margin-bottom:16px}
-    .n-detail-num{font-size:52px;font-weight:700;letter-spacing:-2px;line-height:1}
-    .n-detail-sub{font-size:10px;color:rgba(255,255,255,0.3);margin-top:6px;letter-spacing:1px}
-
-    /* Flicker animation for neon */
-    @keyframes neonPulse{
-      0%,100%{opacity:1}
-      50%{opacity:0.95}
-      75%{opacity:0.98}
+    .setup-box p {
+      color: var(--fitbit-text-dim);
+      margin-bottom: 24px;
+      line-height: 1.6;
     }
-    .n-pulse{animation:neonPulse 3s infinite}
 
-    /* Fade in for neon */
-    @keyframes neonFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-    .n-fade{animation:neonFade 0.4s ease}
-    .n-d1{animation-delay:0.05s;opacity:0;animation-fill-mode:forwards}
-    .n-d2{animation-delay:0.1s;opacity:0;animation-fill-mode:forwards}
-    .n-d3{animation-delay:0.15s;opacity:0;animation-fill-mode:forwards}
-    .n-d4{animation-delay:0.2s;opacity:0;animation-fill-mode:forwards}
-    .n-d5{animation-delay:0.25s;opacity:0;animation-fill-mode:forwards}
-    .n-d6{animation-delay:0.3s;opacity:0;animation-fill-mode:forwards}
-    .n-d7{animation-delay:0.35s;opacity:0;animation-fill-mode:forwards}
-    .n-d8{animation-delay:0.4s;opacity:0;animation-fill-mode:forwards}
-    .n-d9{animation-delay:0.45s;opacity:0;animation-fill-mode:forwards}
-    .n-d10{animation-delay:0.5s;opacity:0;animation-fill-mode:forwards}
+    .theme-editorial .setup-box p {
+      color: var(--editorial-text-dim);
+    }
 
-    /* ═══════════════════════════════════════
-       GLOBAL TRANSITION
-    ═══════════════════════════════════════ */
-    .app{transition:background 0.4s,color 0.4s}
+    .theme-neon .setup-box p {
+      color: var(--neon-text-dim);
+    }
 
-    /* ═══════════════════════════════════════
-       RESPONSIVE — TABLET (≥600px)
-    ═══════════════════════════════════════ */
-    @media(min-width:600px){
-      .app{max-width:100%!important}
+    .setup-box input {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      border: 1px solid var(--fitbit-border);
+      background: var(--fitbit-bg);
+      color: var(--fitbit-text);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-family: inherit;
+    }
 
-      /* Style tabs — centered pills */
-      .style-tabs{
-        max-width:100%!important;justify-content:center;gap:4px;padding:8px 24px;
+    .theme-editorial .setup-box input {
+      border-color: var(--editorial-border);
+      background: var(--editorial-bg);
+      color: var(--editorial-text);
+    }
+
+    .theme-neon .setup-box input {
+      border-color: var(--neon-border);
+      background: var(--neon-bg);
+      color: var(--neon-text);
+    }
+
+    .setup-box button {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      background: var(--fitbit-accent);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .setup-box button:hover {
+      opacity: 0.9;
+    }
+
+    .theme-editorial .setup-box button {
+      background: var(--editorial-accent);
+      color: #fff;
+    }
+
+    .theme-neon .setup-box button {
+      background: var(--neon-accent);
+      color: #000;
+      box-shadow: 0 0 10px var(--neon-accent);
+    }
+
+    /* === HEADER === */
+    header {
+      padding: 20px;
+      border-bottom: 1px solid var(--fitbit-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .theme-editorial header {
+      border-bottom-color: var(--editorial-border);
+    }
+
+    .theme-neon header {
+      border-bottom-color: var(--neon-border);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .user-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 16px;
+      background: var(--fitbit-card);
+      border: 1px solid var(--fitbit-border);
+      border-radius: 24px;
+    }
+
+    .theme-editorial .user-badge {
+      background: var(--editorial-card);
+      border-color: var(--editorial-border);
+    }
+
+    .theme-neon .user-badge {
+      background: var(--neon-card);
+      border-color: var(--neon-border);
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--fitbit-accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+      color: #000;
+    }
+
+    .user-avatar img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .user-name {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      border: 1px solid var(--fitbit-border);
+      background: var(--fitbit-card);
+      color: var(--fitbit-text);
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: var(--fitbit-accent);
+      color: #000;
+      border-color: var(--fitbit-accent);
+    }
+
+    .theme-editorial .btn {
+      border-color: var(--editorial-border);
+      background: var(--editorial-card);
+      color: var(--editorial-text);
+    }
+
+    .theme-editorial .btn:hover {
+      background: var(--editorial-accent);
+      color: #fff;
+      border-color: var(--editorial-accent);
+    }
+
+    .theme-neon .btn {
+      border-color: var(--neon-border);
+      background: var(--neon-card);
+      color: var(--neon-text);
+    }
+
+    .theme-neon .btn:hover {
+      background: var(--neon-accent);
+      color: #000;
+      border-color: var(--neon-accent);
+      box-shadow: 0 0 10px var(--neon-accent);
+    }
+
+    .theme-switcher {
+      display: flex;
+      gap: 8px;
+    }
+
+    .theme-btn {
+      padding: 8px 12px;
+      font-size: 12px;
+      border: 1px solid var(--fitbit-border);
+      background: var(--fitbit-card);
+      color: var(--fitbit-text-dim);
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .theme-btn.active {
+      background: var(--fitbit-accent);
+      color: #000;
+      border-color: var(--fitbit-accent);
+    }
+
+    .theme-editorial .theme-btn {
+      border-color: var(--editorial-border);
+      background: var(--editorial-card);
+      color: var(--editorial-text-dim);
+    }
+
+    .theme-editorial .theme-btn.active {
+      background: var(--editorial-accent);
+      color: #fff;
+      border-color: var(--editorial-accent);
+    }
+
+    .theme-neon .theme-btn {
+      border-color: var(--neon-border);
+      background: var(--neon-card);
+      color: var(--neon-text-dim);
+    }
+
+    .theme-neon .theme-btn.active {
+      background: var(--neon-accent);
+      color: #000;
+      border-color: var(--neon-accent);
+    }
+
+    /* === MAIN CONTAINER === */
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* === GRID === */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 640px) {
+      .grid {
+        grid-template-columns: 1fr;
       }
-      .style-tab{
-        flex:none;padding:10px 24px;border-radius:8px;border-bottom:none!important;
-        font-size:12px;
-      }
-      .style-tab.active{background:rgba(255,255,255,0.08)}
-      .theme-editorial .style-tab.active{background:rgba(0,0,0,0.06)}
-      .theme-neon .style-tab.active{background:rgba(0,255,213,0.08)}
-
-      /* ── Fitbit tablet ── */
-      .f-content{max-width:720px;margin:0 auto;padding:12px 24px 80px}
-      .f-header{max-width:720px;margin:0 auto}
-
-      /* Cards grid — 2 columns */
-      .f-cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-      .f-cards-grid .f-card{margin-bottom:0}
-      .f-cards-grid .f-banner{grid-column:1/-1;margin-bottom:0}
-
-      /* Detail grids — 3 or 4 col */
-      .f-dgrid{grid-template-columns:repeat(3,1fr)}
-
-      /* Bottom nav — wider */
-      .f-nav{max-width:720px!important}
-
-      /* ── Editorial tablet ── */
-      .theme-editorial .e-content{max-width:720px;margin:0 auto;padding:12px 32px 40px}
-      .e-hero-grid{grid-template-columns:repeat(4,1fr)}
-      .e-hero-cell:nth-child(2n){border-right:1px solid #eee}
-      .e-hero-cell:nth-child(n+3){border-top:none}
-      .e-hero-cell:last-child{border-right:none}
-      .e-stat3{grid-template-columns:repeat(3,1fr)}
-      .e-rows-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 32px}
-      .e-chart{height:80px}
-
-      /* ── Neon tablet ── */
-      .n-content{max-width:720px;margin:0 auto;padding:12px 24px 40px}
-      .n-stat-grid{grid-template-columns:repeat(3,1fr)}
-      .n-chart{height:70px}
     }
 
-    /* ═══════════════════════════════════════
-       RESPONSIVE — DESKTOP (≥960px)
-    ═══════════════════════════════════════ */
-    @media(min-width:960px){
-      /* Style tabs */
-      .style-tabs{padding:10px 40px}
-      .style-tab{padding:10px 32px;font-size:12px;letter-spacing:1px}
-
-      /* ── Fitbit desktop ── */
-      .f-content{max-width:1080px;padding:16px 40px 40px}
-      .f-header{max-width:1080px}
-
-      /* Hero — side by side: ring + quick stats */
-      .f-hero{flex-direction:row;gap:40px;padding:32px 0;align-items:center;justify-content:center}
-      .f-quick{gap:36px}
-      .f-banner{max-width:720px;margin-left:auto;margin-right:auto}
-
-      /* Cards — 3 columns */
-      .f-cards-grid{grid-template-columns:repeat(3,1fr);gap:12px}
-
-      /* Detail — wider grid */
-      .f-dgrid{grid-template-columns:repeat(4,1fr);gap:12px}
-      .f-dhero{flex-direction:row;gap:32px;align-items:center}
-      .f-dring{margin-bottom:0}
-
-      /* Hide bottom nav on desktop */
-      .f-nav{display:none!important}
-      .f-content{padding-bottom:40px!important}
-
-      /* Section labels bigger */
-      .f-section{font-size:17px;padding:28px 4px 12px}
-
-      /* Cards hover effect instead of active */
-      .f-card:hover{background:var(--f-card-h);transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,0.3)}
-      .f-card:active{transform:translateY(-1px)}
-
-      /* ── Editorial desktop ── */
-      .theme-editorial .e-content{max-width:960px;margin:0 auto;padding:20px 48px 60px}
-      .e-headline{font-size:48px}
-      .e-hero-grid{grid-template-columns:repeat(4,1fr)}
-      .e-hero-num{font-size:42px}
-      .e-rows-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 48px}
-      .e-row-name{font-size:16px}
-      .e-row-val{font-size:22px}
-      .e-quote{font-size:15px;padding:20px 28px;max-width:640px}
-      .e-chart{height:100px}
-      .e-detail-num{font-size:80px}
-      .e-tags .e-tag{font-size:12px;padding:8px 18px}
-      .e-tag:hover{transform:translateY(-1px)}
-      .e-stat3{grid-template-columns:repeat(3,1fr)}
-
-      /* ── Neon desktop ── */
-      .n-content{max-width:1080px;margin:0 auto;padding:16px 40px 40px}
-      .n-stat-grid{grid-template-columns:repeat(3,1fr);gap:8px}
-      .n-stat-val{font-size:32px}
-      .n-chart{height:80px}
-      .n-wave{height:80px}
-      .n-row{padding:12px 0}
-      .n-row-name{font-size:11px}
-      .n-row-val{font-size:16px}
-      .n-stat:hover{background:rgba(0,255,213,0.06);border-color:rgba(0,255,213,0.2);transform:translateY(-2px)}
-      /* Neon primary strip wider on desktop */
-      .n-primary-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-      .n-cardio-bar{display:flex}
+    /* === CARDS === */
+    .card {
+      background: var(--fitbit-card);
+      border: 1px solid var(--fitbit-border);
+      border-radius: 16px;
+      padding: 24px;
+      cursor: pointer;
+      transition: all 0.2s;
     }
 
-    /* ═══════════════════════════════════════
-       RESPONSIVE — WIDE DESKTOP (≥1280px)
-    ═══════════════════════════════════════ */
-    @media(min-width:1280px){
-      .f-content{max-width:1200px}
-      .f-cards-grid{grid-template-columns:repeat(4,1fr)}
-      .f-dgrid{grid-template-columns:repeat(4,1fr)}
+    .card:hover {
+      border-color: var(--fitbit-accent);
+      transform: translateY(-2px);
+    }
 
-      .theme-editorial .e-content{max-width:1080px}
+    .theme-editorial .card {
+      background: var(--editorial-card);
+      border-color: var(--editorial-border);
+    }
 
-      .n-content{max-width:1200px}
-      .n-stat-grid{grid-template-columns:repeat(4,1fr)}
+    .theme-editorial .card:hover {
+      border-color: var(--editorial-accent);
     }
-    /* ═══════════════════════════════════════
-       SETUP / LOGIN SCREEN
-    ═══════════════════════════════════════ */
-    .setup-screen{
-      position:fixed;inset:0;z-index:500;
-      display:flex;align-items:center;justify-content:center;
-      background:#0a0f0d;color:#e8efe9;
-      font-family:'DM Sans',sans-serif;
-    }
-    .setup-screen.hidden{display:none}
-    .setup-box{
-      width:100%;max-width:420px;padding:40px 32px;text-align:center;
-    }
-    .setup-logo{font-size:48px;margin-bottom:16px}
-    .setup-title{
-      font-family:'Outfit',sans-serif;font-size:24px;font-weight:700;
-      letter-spacing:-0.5px;margin-bottom:8px;
-    }
-    .setup-sub{font-size:13px;color:#8a9b90;margin-bottom:32px;line-height:1.6}
-    .setup-input{
-      width:100%;padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);
-      background:rgba(255,255,255,0.04);color:#e8efe9;font-size:14px;
-      font-family:'JetBrains Mono',monospace;margin-bottom:12px;
-      outline:none;transition:border-color 0.2s;
-    }
-    .setup-input:focus{border-color:rgba(92,224,184,0.4)}
-    .setup-input::placeholder{color:#5a6b60}
-    .setup-btn{
-      width:100%;padding:14px;border-radius:12px;border:none;
-      background:#5ce0b8;color:#0a0f0d;font-size:14px;font-weight:600;
-      font-family:'DM Sans',sans-serif;cursor:pointer;
-      transition:all 0.2s;margin-top:8px;
-    }
-    .setup-btn:hover{background:#4dd0a8;transform:translateY(-1px)}
-    .setup-btn:active{transform:translateY(0)}
-    .setup-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
-    .setup-btn.secondary{
-      background:transparent;color:#5ce0b8;border:1px solid rgba(92,224,184,0.3);
-      margin-top:12px;
-    }
-    .setup-btn.secondary:hover{background:rgba(92,224,184,0.08)}
-    .setup-hint{font-size:11px;color:#5a6b60;margin-top:16px;line-height:1.5}
-    .setup-hint a{color:#5ce0b8;text-decoration:none}
-    .setup-hint a:hover{text-decoration:underline}
-    .setup-error{font-size:12px;color:#ff7f6b;margin-top:8px;display:none}
-    .setup-error.show{display:block}
-    .setup-divider{
-      display:flex;align-items:center;gap:12px;margin:20px 0;
-      font-size:10px;color:#5a6b60;text-transform:uppercase;letter-spacing:1.5px;
-    }
-    .setup-divider::before,.setup-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.06)}
 
-    /* Loading overlay */
-    .loading-overlay{
-      position:fixed;inset:0;z-index:400;
-      display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;
-      background:#0a0f0d;color:#e8efe9;font-family:'DM Sans',sans-serif;
+    .theme-neon .card {
+      background: var(--neon-card);
+      border-color: var(--neon-border);
     }
-    .loading-overlay.hidden{display:none}
-    .loading-spinner{
-      width:36px;height:36px;border-radius:50%;
-      border:3px solid rgba(92,224,184,0.15);border-top-color:#5ce0b8;
-      animation:spin 0.8s linear infinite;
-    }
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .loading-text{font-size:13px;color:#8a9b90}
 
-    /* User badge / logout */
-    .user-badge{
-      position:fixed;top:48px;right:16px;z-index:201;
-      display:flex;align-items:center;gap:8px;
-      padding:6px 12px;border-radius:20px;
-      background:rgba(255,255,255,0.06);backdrop-filter:blur(12px);
-      font-family:'DM Sans',sans-serif;font-size:11px;color:#8a9b90;
-      cursor:pointer;transition:all 0.2s;
+    .theme-neon .card:hover {
+      border-color: var(--neon-accent);
+      box-shadow: 0 0 20px var(--neon-border);
     }
-    .user-badge:hover{background:rgba(255,255,255,0.1);color:#e8efe9}
-    .user-badge.hidden{display:none}
-    .user-badge-dot{width:6px;height:6px;border-radius:50%;background:#5ce0b8}
-    @media(min-width:600px){.user-badge{top:52px;right:24px}}
 
-    /* Data source indicator */
-    .data-source{
-      font-family:'DM Sans',sans-serif;font-size:10px;color:#5a6b60;
-      text-align:center;padding:8px 0;letter-spacing:0.5px;
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fitbit-text-dim);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
-    .data-source .live{color:#5ce0b8}
-    .data-source .demo{color:#ffd666}
+
+    .theme-editorial .card-title {
+      color: var(--editorial-text-dim);
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+
+    .theme-neon .card-title {
+      color: var(--neon-text-dim);
+      font-size: 12px;
+    }
+
+    .card-value {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .card-label {
+      font-size: 14px;
+      color: var(--fitbit-text-dim);
+    }
+
+    .theme-editorial .card-label {
+      color: var(--editorial-text-dim);
+    }
+
+    .theme-neon .card-label {
+      color: var(--neon-text-dim);
+    }
+
+    /* === HERO CARD (for rings/circles) === */
+    .hero-card {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      padding: 40px 24px;
+    }
+
+    .hero-ring-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 24px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .hero-stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .hero-stat-value {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--fitbit-accent);
+    }
+
+    .theme-editorial .hero-stat-value {
+      color: var(--editorial-accent);
+    }
+
+    .theme-neon .hero-stat-value {
+      color: var(--neon-accent);
+    }
+
+    .hero-stat-label {
+      font-size: 14px;
+      color: var(--fitbit-text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .theme-editorial .hero-stat-label {
+      color: var(--editorial-text-dim);
+    }
+
+    .theme-neon .hero-stat-label {
+      color: var(--neon-text-dim);
+    }
+
+    /* === DETAIL PAGES === */
+    .detail-page {
+      display: none;
+    }
+
+    .detail-page.active {
+      display: block;
+    }
+
+    .detail-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .back-btn {
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      border: 1px solid var(--fitbit-border);
+      background: var(--fitbit-card);
+      color: var(--fitbit-text);
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .back-btn:hover {
+      background: var(--fitbit-accent);
+      color: #000;
+      border-color: var(--fitbit-accent);
+    }
+
+    .theme-editorial .back-btn {
+      border-color: var(--editorial-border);
+      background: var(--editorial-card);
+      color: var(--editorial-text);
+    }
+
+    .theme-editorial .back-btn:hover {
+      background: var(--editorial-accent);
+      color: #fff;
+      border-color: var(--editorial-accent);
+    }
+
+    .theme-neon .back-btn {
+      border-color: var(--neon-border);
+      background: var(--neon-card);
+      color: var(--neon-text);
+    }
+
+    .theme-neon .back-btn:hover {
+      background: var(--neon-accent);
+      color: #000;
+      border-color: var(--neon-accent);
+    }
+
+    .detail-title {
+      font-size: 32px;
+      font-weight: 700;
+    }
+
+    .chart-container {
+      background: var(--fitbit-card);
+      border: 1px solid var(--fitbit-border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .theme-editorial .chart-container {
+      background: var(--editorial-card);
+      border-color: var(--editorial-border);
+    }
+
+    .theme-neon .chart-container {
+      background: var(--neon-card);
+      border-color: var(--neon-border);
+    }
+
+    .chart-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+    }
+
+    /* === LOADING === */
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      font-size: 18px;
+      color: var(--fitbit-text-dim);
+    }
+
+    .theme-editorial .loading {
+      color: var(--editorial-text-dim);
+    }
+
+    .theme-neon .loading {
+      color: var(--neon-text-dim);
+    }
+
+    /* === UTILITIES === */
+    .hidden {
+      display: none !important;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .mb-4 {
+      margin-bottom: 16px;
+    }
+
+    /* === EDITORIAL SPECIFIC === */
+    .theme-editorial h1,
+    .theme-editorial h2,
+    .theme-editorial h3 {
+      font-family: 'Playfair Display', serif;
+    }
+
+    .theme-editorial .card-title {
+      font-family: 'Outfit', sans-serif;
+    }
+
+    /* === NEON SPECIFIC === */
+    .theme-neon .card {
+      position: relative;
+    }
+
+    .theme-neon .card::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      background: linear-gradient(45deg, var(--neon-accent), var(--neon-text));
+      border-radius: 16px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: -1;
+    }
+
+    .theme-neon .card:hover::before {
+      opacity: 0.2;
+    }
   </style>
 </head>
-<body>
-
-<!-- ═══ SETUP SCREEN ═══ -->
-<div class="setup-screen" id="setupScreen">
-  <div class="setup-box">
-    <div class="setup-logo">💚</div>
-    <div class="setup-title">Health Dashboard</div>
-    <div class="setup-sub">Connect your Fitbit account to see your real health data across three beautiful presentation styles.</div>
-
-    <input class="setup-input" id="setupClientId" type="text" placeholder="Fitbit Client ID (e.g. 23RXYZ)" autocomplete="off" spellcheck="false">
-    <input class="setup-input" id="setupRedirectUri" type="text" placeholder="Redirect URI (leave blank for current URL)" autocomplete="off" spellcheck="false">
-    <div class="setup-error" id="setupError"></div>
-    <button class="setup-btn" id="setupConnectBtn" onclick="doSetupConnect()">Connect Fitbit Account</button>
-
-    <div class="setup-divider">or</div>
-
-    <button class="setup-btn secondary" onclick="doSetupDemo()">View with Demo Data</button>
-
-    <div class="setup-hint">
-      Register your app at <a href="https://dev.fitbit.com/apps" target="_blank">dev.fitbit.com/apps</a><br>
-      Set type to "Personal", OAuth grant to "Implicit"<br>
-      Redirect URI: <code style="color:#5ce0b8;font-family:'JetBrains Mono',monospace;font-size:10px" id="currentUrl"></code>
+<body class="theme-fitbit">
+  <!-- Setup Screen -->
+  <div id="setupScreen" class="hidden">
+    <div class="setup-box">
+      <h1>🏃 Fitness Dashboard</h1>
+      <p>Connect your Fitbit account to get started. You'll need your Fitbit OAuth Client ID.</p>
+      <input type="text" id="clientIdInput" placeholder="Enter Client ID" />
+      <button id="connectBtn">Connect Fitbit</button>
     </div>
   </div>
-</div>
 
-<!-- ═══ LOADING OVERLAY ═══ -->
-<div class="loading-overlay hidden" id="loadingOverlay">
-  <div class="loading-spinner"></div>
-  <div class="loading-text">Fetching your health data...</div>
-</div>
-
-<!-- ═══ USER BADGE ═══ -->
-<div class="user-badge hidden" id="userBadge" onclick="showUserMenu()">
-  <div class="user-badge-dot"></div>
-  <span id="userBadgeName">Connected</span>
-</div>
-
-<div class="app" id="app" style="display:none">
-
-  <!-- ═══ STYLE TABS ═══ -->
-  <div class="style-tabs" id="styleTabs">
-    <div class="style-tab active" onclick="switchTheme('fitbit')">Fitbit</div>
-    <div class="style-tab" onclick="switchTheme('editorial')">Editorial</div>
-    <div class="style-tab" onclick="switchTheme('neon')">Neon Pulse</div>
-  </div>
-
-  <!-- ═══════════════════════════════════════
-       THEME 1: FITBIT CLASSIC
-  ═══════════════════════════════════════ -->
-  <div class="theme-view theme-fitbit active" id="view-fitbit">
-    <div class="f-header">
-      <button class="f-header-back" id="fBack" onclick="fGoBack()">‹</button>
-      <span class="f-header-title" id="fTitle">Today</span>
-    </div>
-
-    <div class="f-main" id="fMain">
-      <div class="f-content fade-up">
-        <!-- Hero ring -->
-        <div class="f-hero">
-          <div class="f-ring-wrap">
-            <svg viewBox="0 0 200 200">
-              <circle cx="100" cy="100" r="88" fill="none" stroke="var(--f-ring-track)" stroke-width="10"/>
-              <circle cx="100" cy="100" r="88" fill="none" stroke="var(--f-mint)" stroke-width="10" stroke-linecap="round" stroke-dasharray="553" stroke-dashoffset="553" class="ring-a" data-target="553"/>
-              <circle cx="100" cy="100" r="74" fill="none" stroke="var(--f-ring-track)" stroke-width="10"/>
-              <circle cx="100" cy="100" r="74" fill="none" stroke="var(--f-lav)" stroke-width="10" stroke-linecap="round" stroke-dasharray="465" stroke-dashoffset="465" class="ring-a" data-target="209"/>
-            </svg>
-            <div class="f-ring-center">
-              <div class="ri">💚</div>
-              <div class="rl">Cardio Load</div>
-              <div class="rv">0 <span style="font-size:14px;color:var(--f-t2);font-weight:400">· Target 1-16</span></div>
-              <div class="rs"><span style="color:var(--f-lav)">✦</span> Daily Readiness · 55 · Moderate</div>
-            </div>
-          </div>
+  <!-- Main Dashboard -->
+  <div id="dashboard" class="hidden">
+    <header>
+      <div class="header-left">
+        <div class="user-badge" id="userBadge">
+          <div class="user-avatar" id="userAvatar">?</div>
+          <div class="user-name" id="userName">Loading...</div>
         </div>
-        <div class="f-quick">
-          <div class="f-qs" onclick="fOpen('exercise')"><div class="f-qs-ic bg-md"><span class="tc-m">🏋️</span></div><div class="f-qs-v">0 <span style="font-size:11px;color:var(--f-t2)">of 5</span></div><div class="f-qs-l">Exercise</div></div>
-          <div class="f-qs" onclick="fOpen('sleep')"><div class="f-qs-ic bg-ld"><span class="tc-l">🌙</span></div><div class="f-qs-v" data-bind="sleep-dur">6h 29m</div><div class="f-qs-l">Sleep</div></div>
-          <div class="f-qs" onclick="fOpen('steps')"><div class="f-qs-ic bg-md"><span class="tc-m">👟</span></div><div class="f-qs-v" data-bind="steps">541</div><div class="f-qs-l">Steps</div></div>
-        </div>
-        <div class="f-banner" style="margin-top:16px"><div class="f-banner-ic">✦</div><div class="f-banner-tx"><strong style="color:var(--f-t1)">Recovery requires rest days</strong><br>You've been working hard, but overtraining can increase strain. Give your body a break.</div></div>
-
-        <div class="f-section">Activity</div>
-        <div class="f-cards-grid">
-        <div class="f-card" onclick="fOpen('cardio')"><div class="f-card-l"><div class="f-card-t">Cardio load</div><div class="f-card-v tc-m">0</div><div class="f-card-s">Today · Target 1-16</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/></svg></div></div>
-        <div class="f-card" onclick="fOpen('exercise')"><div class="f-card-l"><div class="f-card-t">Exercise days</div><div class="f-card-v">0 <span class="u">of 5</span></div><div class="f-card-s">This week</div></div><div class="f-weekly"><div class="f-bars"><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div></div><div class="f-days"><div class="f-day now">S</div><div class="f-day">M</div><div class="f-day">T</div><div class="f-day">W</div><div class="f-day">T</div><div class="f-day">F</div><div class="f-day">S</div></div></div></div>
-        <div class="f-card" onclick="fOpen('azm')"><div class="f-card-l"><div class="f-card-t">Active Zone Min</div><div class="f-card-v tc-m">0</div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/></svg></div></div>
-        <div class="f-card" onclick="fOpen('steps')"><div class="f-card-l"><div class="f-card-t">Steps</div><div class="f-card-v tc-m" data-bind="steps">541</div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-mint)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" data-target="124"/></svg></div></div>
-        <div class="f-card" onclick="fOpen('hourly')"><div class="f-card-l"><div class="f-card-t">Hourly activity</div><div class="f-card-v">0 <span class="u">of 9</span></div><div class="f-card-s">Today</div></div><div class="f-hourly"><div class="f-hrow"><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div></div><div style="display:flex;justify-content:space-between;width:100%"><span style="font-size:9px;color:var(--f-t3)">9am</span><span style="font-size:9px;color:var(--f-t3)">5pm</span></div></div></div>
-        <div class="f-card" onclick="fOpen('distance')"><div class="f-card-l"><div class="f-card-t">Distance</div><div class="f-card-v tc-m"><span data-bind="distance">0.38</span> <span class="u">km</span></div><div class="f-card-s">Today</div></div><div style="font-size:28px;opacity:0.4">📍</div></div>
-        <div class="f-card" onclick="fOpen('calories')"><div class="f-card-l"><div class="f-card-t">Energy burned</div><div class="f-card-v tc-c"><span data-bind="calories">706</span> <span class="u">cal</span></div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-coral)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" data-target="69"/></svg></div></div>
-        <div class="f-card" onclick="fOpen('floors')"><div class="f-card-l"><div class="f-card-t">Floors</div><div class="f-card-v tc-m">0</div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/></svg></div></div>
-        </div><!-- /f-cards-grid activity -->
-
-        <div class="f-section">Recovery</div>
-        <div class="f-cards-grid">
-        <div class="f-card" onclick="fOpen('sleep')"><div class="f-card-l"><div class="f-card-t">Sleep duration</div><div class="f-card-v tc-l" data-bind="sleep-dur">6h 29m</div><div class="f-card-s">Today · Sleep Score: <span data-bind="sleep-score">81</span></div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-lav)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" data-target="24"/></svg></div></div>
-        <div class="f-card"><div class="f-card-l" style="flex-direction:row;align-items:center;gap:12px"><span style="font-size:24px">🌙</span><div><div class="f-card-t">Your sleep profile</div><div style="font-size:16px;font-weight:600;margin-top:2px">The Hedgehog</div></div></div></div>
-        <div class="f-card" onclick="fOpen('readiness')"><div class="f-card-l"><div class="f-card-t">Daily readiness</div><div class="f-card-v tc-l">55</div><div class="f-card-s">Today · Moderate</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-lav)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" data-target="62"/></svg></div></div>
-        </div><!-- /f-cards-grid recovery -->
-
-        <div class="f-section">Stress & mindfulness</div>
-        <div class="f-cards-grid">
-        <div class="f-card" onclick="fOpen('mindful')"><div class="f-card-l"><div class="f-card-t">Mindful days</div><div class="f-card-v">0 <span class="u">of 5</span></div><div class="f-card-s">This week</div></div><div class="f-weekly"><div class="f-bars"><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div></div><div class="f-days"><div class="f-day now">S</div><div class="f-day">M</div><div class="f-day">T</div><div class="f-day">W</div><div class="f-day">T</div><div class="f-day">F</div><div class="f-day">S</div></div></div></div>
-        <div class="f-card" onclick="fOpen('stress')"><div class="f-card-l"><div class="f-card-t">Stress management score</div><div class="f-card-v tc-l">88</div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-lav)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" data-target="17"/></svg></div></div>
-        </div><!-- /f-cards-grid stress -->
-
-        <div class="f-section">Health</div>
-        <div class="f-cards-grid">
-        <div class="f-card" onclick="fOpen('healthMetrics')"><div class="f-card-l"><div class="f-card-t">Health metrics</div><div class="f-card-v tc-b">5 <span class="u">of 5</span></div><div class="f-card-s">In personal range</div></div><div style="display:flex;gap:2px;align-items:flex-end"><div style="width:6px;height:16px;background:var(--f-blue);border-radius:2px"></div><div style="width:6px;height:22px;background:var(--f-blue);border-radius:2px"></div><div style="width:6px;height:18px;background:var(--f-blue);border-radius:2px"></div><div style="width:6px;height:26px;background:var(--f-blue);border-radius:2px"></div><div style="width:6px;height:20px;background:var(--f-blue);border-radius:2px"></div></div></div>
-        <div class="f-card" onclick="fOpen('heartrate')"><div class="f-card-l"><div class="f-card-t">Heart rate</div><div class="f-card-v tc-c"><span data-bind="hr">81</span> <span class="u">bpm</span></div><div class="f-card-s"><span data-bind="rhr">78</span> resting</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-coral)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" data-target="42"/></svg></div></div>
-        <div class="f-card" onclick="fOpen('weight')"><div class="f-card-l"><div class="f-card-t">Weight</div><div class="f-card-v"><span data-bind="weight">76</span> <span class="u">kg</span></div><div class="f-card-s"><span data-bind="weight-to-go">4 kg</span> left to goal</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><span style="font-size:12px;color:var(--f-mint)">↓ 72 kg goal</span></div></div>
-        </div><!-- /f-cards-grid health -->
       </div>
-    </div>
-
-    <!-- Fitbit detail pages container -->
-    <div id="fDetails"></div>
-
-    <div class="f-nav">
-      <button class="f-nav-i on"><span class="f-nav-ic">🌤️</span>Today</button>
-      <button class="f-nav-i"><span class="f-nav-ic">📋</span>Coach</button>
-      <button class="f-nav-i"><span class="f-nav-ic">⊞</span>You</button>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════
-       THEME 2: EDITORIAL
-  ═══════════════════════════════════════ -->
-  <div class="theme-view theme-editorial" id="view-editorial">
-    <div class="e-main" id="eMain">
-      <div class="e-content">
-        <div class="e-back" id="eBack" onclick="eGoBack()">← Back to overview</div>
-        <div class="e-date">Sunday, February 22, 2026 <span>■</span> Health Report</div>
-        <div class="e-headline">Your Body<br>Today.</div>
-        <div class="e-subhead">A comprehensive view of vitals, recovery, and readiness.</div>
-
-        <!-- Hero Grid -->
-        <div class="e-hero-grid">
-          <div class="e-hero-cell" onclick="eOpen('steps')">
-            <div class="e-hero-label">Steps</div>
-            <div class="e-hero-num e-accent" data-bind="steps">541</div>
-            <div class="e-hero-note">of 5,500 goal</div>
-          </div>
-          <div class="e-hero-cell" onclick="eOpen('sleep')">
-            <div class="e-hero-label">Sleep</div>
-            <div class="e-hero-num">6<span class="e-unit">h</span>29<span class="e-unit">m</span></div>
-            <div class="e-hero-note">score 81 · good</div>
-          </div>
-          <div class="e-hero-cell" onclick="eOpen('heartrate')">
-            <div class="e-hero-label">Heart Rate</div>
-            <div class="e-hero-num"><span data-bind="hr">81</span><span class="e-unit"> bpm</span></div>
-            <div class="e-hero-note">resting 78</div>
-          </div>
-          <div class="e-hero-cell" onclick="eOpen('readiness')">
-            <div class="e-hero-label">Readiness</div>
-            <div class="e-hero-num">55</div>
-            <div class="e-hero-note">moderate</div>
-          </div>
+      <div class="header-actions">
+        <button class="btn" id="refreshBtn">↻ Refresh</button>
+        <button class="btn" id="demoBtn">Demo Mode</button>
+        <button class="btn" id="logoutBtn">Logout</button>
+        <div class="theme-switcher">
+          <button class="theme-btn active" data-theme="fitbit">Fitbit</button>
+          <button class="theme-btn" data-theme="editorial">Editorial</button>
+          <button class="theme-btn" data-theme="neon">Neon</button>
         </div>
-
-        <div class="e-quote">
-          <strong>Recovery requires rest days.</strong> You've been working hard, but overtraining can increase strain. Give your body a break so you can train to your potential.
-        </div>
-
-        <!-- Activity -->
-        <div class="e-divider"><div class="e-divider-line"></div><div class="e-divider-text">Activity</div><div class="e-divider-line"></div></div>
-
-        <div class="e-rows-grid">
-        <div class="e-row" onclick="eOpen('cardio')"><div><div class="e-row-name">Cardio Load</div></div><div><div class="e-row-val">0<span class="e-row-unit"></span></div><div class="e-row-sub">target 1–16</div></div></div>
-        <div class="e-row" onclick="eOpen('exercise')"><div><div class="e-row-name">Exercise Days</div></div><div><div class="e-row-val">0<span class="e-row-unit"> of 5</span></div><div class="e-row-sub">this week</div></div></div>
-        <div class="e-row" onclick="eOpen('azm')"><div><div class="e-row-name">Active Zone Minutes</div></div><div><div class="e-row-val">0</div><div class="e-row-sub">today</div></div></div>
-        <div class="e-row" onclick="eOpen('steps')"><div><div class="e-row-name">Steps</div></div><div><div class="e-row-val e-accent">541</div><div class="e-row-sub">today</div></div></div>
-        <div class="e-row" onclick="eOpen('hourly')"><div><div class="e-row-name">Hourly Activity</div></div><div><div class="e-row-val">0<span class="e-row-unit"> of 9</span></div><div class="e-row-sub">today</div></div></div>
-        <div class="e-row" onclick="eOpen('distance')"><div><div class="e-row-name">Distance</div></div><div><div class="e-row-val">0.38<span class="e-row-unit"> km</span></div></div></div>
-        <div class="e-row" onclick="eOpen('calories')"><div><div class="e-row-name">Energy Burned</div></div><div><div class="e-row-val e-accent">706<span class="e-row-unit"> cal</span></div></div></div>
-        <div class="e-row" onclick="eOpen('floors')"><div><div class="e-row-name">Floors</div></div><div><div class="e-row-val">0</div></div></div>
-        </div>
-
-        <div class="e-chart-wrap">
-          <div class="e-chart-title">Steps — This Week</div>
-          <div class="e-chart" id="eStepsChart"></div>
-          <div class="e-chart-labels"><span class="e-chart-label">Sun</span><span class="e-chart-label">Mon</span><span class="e-chart-label">Tue</span><span class="e-chart-label">Wed</span><span class="e-chart-label">Thu</span><span class="e-chart-label">Fri</span><span class="e-chart-label">Sat</span></div>
-        </div>
-
-        <!-- Recovery -->
-        <div class="e-divider"><div class="e-divider-line"></div><div class="e-divider-text">Recovery</div><div class="e-divider-line"></div></div>
-
-        <div class="e-row" onclick="eOpen('sleep')"><div><div class="e-row-name">Sleep Duration</div></div><div><div class="e-row-val">6h 29m</div><div class="e-row-sub">score 81</div></div></div>
-        <div class="e-row"><div><div class="e-row-name">Sleep Profile</div></div><div><div class="e-row-val" style="font-size:16px">🦔 The Hedgehog</div></div></div>
-        <div class="e-row" onclick="eOpen('readiness')"><div><div class="e-row-name">Daily Readiness</div></div><div><div class="e-row-val">55</div><div class="e-row-sub">moderate</div></div></div>
-
-        <div class="e-stat3">
-          <div class="e-stat3-cell"><div class="e-stat3-num" style="color:#c0392b">81</div><div class="e-stat3-label">Sleep Score</div></div>
-          <div class="e-stat3-cell"><div class="e-stat3-num">55</div><div class="e-stat3-label">Readiness</div></div>
-          <div class="e-stat3-cell"><div class="e-stat3-num">88</div><div class="e-stat3-label">Stress</div></div>
-        </div>
-
-        <!-- Stress -->
-        <div class="e-divider"><div class="e-divider-line"></div><div class="e-divider-text">Stress & Mindfulness</div><div class="e-divider-line"></div></div>
-
-        <div class="e-row" onclick="eOpen('mindful')"><div><div class="e-row-name">Mindful Days</div></div><div><div class="e-row-val">0<span class="e-row-unit"> of 5</span></div><div class="e-row-sub">this week</div></div></div>
-        <div class="e-row" onclick="eOpen('stress')"><div><div class="e-row-name">Stress Management</div></div><div><div class="e-row-val e-accent">88</div><div class="e-row-sub">excellent</div></div></div>
-
-        <!-- Health -->
-        <div class="e-divider"><div class="e-divider-line"></div><div class="e-divider-text">Health Metrics</div><div class="e-divider-line"></div></div>
-
-        <div style="font-size:14px;color:#555;margin-bottom:12px;font-style:italic">5 of 5 metrics in your personal range.</div>
-        <div class="e-tags">
-          <div class="e-tag in-range" onclick="eOpen('healthBR')">BR 16 brpm ✓</div>
-          <div class="e-tag in-range" onclick="eOpen('healthSpO2')">SpO₂ 97% ✓</div>
-          <div class="e-tag in-range" onclick="eOpen('heartrate')">RHR 78 bpm ✓</div>
-          <div class="e-tag in-range" onclick="eOpen('healthHRV')">HRV 32 ms ✓</div>
-          <div class="e-tag in-range" onclick="eOpen('healthTemp')">Temp +0.2° ✓</div>
-        </div>
-
-        <div class="e-row" onclick="eOpen('heartrate')"><div><div class="e-row-name">Heart Rate</div></div><div><div class="e-row-val e-accent">81<span class="e-row-unit"> bpm</span></div><div class="e-row-sub">resting 78</div></div></div>
-        <div class="e-row" onclick="eOpen('weight')"><div><div class="e-row-name">Weight</div></div><div><div class="e-row-val">76<span class="e-row-unit"> kg</span></div><div class="e-row-sub">4 kg to goal</div></div></div>
-
-        <div class="e-footer">— End of Today's Report —</div>
       </div>
-    </div>
+    </header>
 
-    <div id="eDetails"></div>
-  </div>
-
-  <!-- ═══════════════════════════════════════
-       THEME 3: NEON PULSE
-  ═══════════════════════════════════════ -->
-  <div class="theme-view theme-neon" id="view-neon">
-    <div class="n-main" id="nMain">
-      <div class="n-content">
-        <div class="n-back" id="nBack" onclick="nGoBack()">‹ BACK</div>
-        <div class="n-header n-fade n-d1">
-          <div class="n-header-title n-glow n-pulse">VITALS // TODAY</div>
-          <div class="n-header-time" id="neonTime">09:13 IST</div>
+    <main>
+      <!-- Overview Page -->
+      <div id="overviewPage">
+        <div class="loading" id="loadingIndicator">Loading your data...</div>
+        <div id="dataContainer" class="hidden">
+          <!-- Data will be rendered here -->
         </div>
-
-        <!-- Primary readouts — compact 4-col strip -->
-        <div class="n-primary-strip n-fade n-d2" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px">
-          <div style="text-align:center;cursor:pointer;padding:10px 4px;background:rgba(0,255,213,0.03);border:1px solid rgba(0,255,213,0.08)" onclick="nOpen('readiness')">
-            <div style="font-size:7px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.25);margin-bottom:6px">Ready</div>
-            <div style="font-size:22px;font-weight:700;color:#00ffd5;text-shadow:0 0 6px #00ffd5,0 0 15px #00ffd5;line-height:1">55</div>
-            <div style="font-size:7px;color:rgba(255,255,255,0.15);margin-top:3px;letter-spacing:1px">MOD</div>
-          </div>
-          <div style="text-align:center;cursor:pointer;padding:10px 4px;background:rgba(255,0,229,0.03);border:1px solid rgba(255,0,229,0.08)" onclick="nOpen('stress')">
-            <div style="font-size:7px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.25);margin-bottom:6px">Stress</div>
-            <div style="font-size:22px;font-weight:700;color:#ff00e5;text-shadow:0 0 6px #ff00e5,0 0 15px #ff00e5;line-height:1">88</div>
-            <div style="font-size:7px;color:rgba(255,255,255,0.15);margin-top:3px;letter-spacing:1px">EXC</div>
-          </div>
-          <div style="text-align:center;cursor:pointer;padding:10px 4px;background:rgba(255,51,102,0.03);border:1px solid rgba(255,51,102,0.08)" onclick="nOpen('heartrate')">
-            <div style="font-size:7px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.25);margin-bottom:6px">HR</div>
-            <div style="font-size:22px;font-weight:700;color:#ff3366;text-shadow:0 0 6px #ff3366,0 0 15px #ff3366;line-height:1">81</div>
-            <div style="font-size:7px;color:rgba(255,255,255,0.15);margin-top:3px;letter-spacing:1px">BPM</div>
-          </div>
-          <div style="text-align:center;cursor:pointer;padding:10px 4px;background:rgba(255,0,229,0.03);border:1px solid rgba(255,0,229,0.08)" onclick="nOpen('sleep')">
-            <div style="font-size:7px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.25);margin-bottom:6px">Sleep</div>
-            <div style="font-size:22px;font-weight:700;color:#ff00e5;text-shadow:0 0 6px #ff00e5;line-height:1">6:29</div>
-            <div style="font-size:7px;color:rgba(255,255,255,0.15);margin-top:3px;letter-spacing:1px">81</div>
-          </div>
-        </div>
-
-        <!-- Cardio + quick stats inline -->
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;padding:10px 12px;background:rgba(0,255,213,0.02);border:1px solid rgba(0,255,213,0.06)" class="n-fade n-d3">
-          <div style="position:relative;width:56px;height:56px;flex-shrink:0">
-            <svg viewBox="0 0 56 56" style="width:100%;height:100%;transform:rotate(-90deg)">
-              <circle cx="28" cy="28" r="23" fill="none" stroke="rgba(0,255,213,0.1)" stroke-width="4"/>
-            </svg>
-            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-              <div style="font-size:18px;font-weight:700;color:#00ffd5;text-shadow:0 0 6px #00ffd5">0</div>
-            </div>
-          </div>
-          <div style="flex:1">
-            <div style="font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:rgba(0,255,213,0.4)">Cardio Load</div>
-            <div style="font-size:9px;color:rgba(255,255,255,0.15);margin-top:2px;letter-spacing:1px">TARGET 1-16 // NO ACTIVITY</div>
-          </div>
-          <div style="text-align:right">
-            <div style="font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:1px">541 <span style="font-size:7px">STEPS</span></div>
-            <div style="font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:1px;margin-top:2px">706 <span style="font-size:7px">CAL</span></div>
-          </div>
-        </div>
-
-        <!-- Activity section -->
-        <div class="n-section n-fade n-d7">Activity</div>
-        <div class="n-stat-grid">
-          <div class="n-stat" onclick="nOpen('steps')">
-            <div class="n-stat-label">Steps</div>
-            <div class="n-stat-val n-cyan">541</div>
-            <div class="n-gauge"><div class="n-gauge-fill" style="width:10%;background:#00ffd5"></div></div>
-            <div class="n-gauge-labels"><span class="n-gauge-lb">0</span><span class="n-gauge-lb">5500</span></div>
-          </div>
-          <div class="n-stat" onclick="nOpen('calories')">
-            <div class="n-stat-label">Energy</div>
-            <div class="n-stat-val n-red">706<span class="n-stat-unit">CAL</span></div>
-            <div class="n-gauge"><div class="n-gauge-fill" style="width:50%;background:#ff3366"></div></div>
-            <div class="n-gauge-labels"><span class="n-gauge-lb">0</span><span class="n-gauge-lb">1400</span></div>
-          </div>
-          <div class="n-stat" onclick="nOpen('distance')">
-            <div class="n-stat-label">Distance</div>
-            <div class="n-stat-val n-cyan">0.38<span class="n-stat-unit">KM</span></div>
-          </div>
-          <div class="n-stat" onclick="nOpen('azm')">
-            <div class="n-stat-label">Active Zone</div>
-            <div class="n-stat-val" style="color:rgba(255,255,255,0.2)">0<span class="n-stat-unit">MIN</span></div>
-          </div>
-          <div class="n-stat" onclick="nOpen('exercise')">
-            <div class="n-stat-label">Exercise Days</div>
-            <div class="n-stat-val" style="color:rgba(255,255,255,0.2)">0<span class="n-stat-unit">/ 5</span></div>
-          </div>
-          <div class="n-stat" onclick="nOpen('floors')">
-            <div class="n-stat-label">Floors</div>
-            <div class="n-stat-val" style="color:rgba(255,255,255,0.2)">0</div>
-          </div>
-        </div>
-
-        <!-- Steps chart -->
-        <div style="margin:8px 0 20px">
-          <div style="font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:rgba(0,255,213,0.4);margin-bottom:8px">STEPS // 7 DAY</div>
-          <div class="n-chart" id="nStepsChart"></div>
-          <div class="n-chart-labels"><span class="n-chart-lb">Sun</span><span class="n-chart-lb">Mon</span><span class="n-chart-lb">Tue</span><span class="n-chart-lb">Wed</span><span class="n-chart-lb">Thu</span><span class="n-chart-lb">Fri</span><span class="n-chart-lb">Sat</span></div>
-        </div>
-
-        <!-- Recovery section -->
-        <div class="n-section n-fade n-d8">Recovery</div>
-        <div class="n-stat-grid">
-          <div class="n-stat" onclick="nOpen('sleep')">
-            <div class="n-stat-label">Sleep Duration</div>
-            <div class="n-stat-val n-mag">6:29</div>
-            <div class="n-stat-sub">SCORE 81</div>
-          </div>
-          <div class="n-stat" onclick="nOpen('readiness')">
-            <div class="n-stat-label">Readiness</div>
-            <div class="n-stat-val n-cyan">55</div>
-            <div class="n-stat-sub">MODERATE</div>
-          </div>
-          <div class="n-stat full">
-            <div class="n-stat-label">Sleep Profile</div>
-            <div style="display:flex;align-items:center;gap:12px">
-              <span style="font-size:28px">🦔</span>
-              <div>
-                <div class="n-stat-val" style="font-size:16px;color:#fff">THE HEDGEHOG</div>
-                <div class="n-stat-sub">SHORT BURSTS // GOOD DEEP SLEEP</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Sleep stages bar -->
-        <div style="margin:4px 0 20px">
-          <div style="font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:rgba(255,0,229,0.4);margin-bottom:8px">SLEEP STAGES // LAST NIGHT</div>
-          <div class="n-sleep-bar">
-            <div style="width:11%;background:#ff00e5"></div>
-            <div style="width:20%;background:#aa00cc"></div>
-            <div style="width:5%;background:#ff00e5"></div>
-            <div style="width:28%;background:#6600aa"></div>
-            <div style="width:8%;background:#330066"></div>
-            <div style="width:15%;background:#6600aa"></div>
-            <div style="width:13%;background:#330066"></div>
-          </div>
-          <div class="n-sleep-labels"><span class="n-sleep-lb">12:34 AM</span><span class="n-sleep-lb">AWAKE</span><span class="n-sleep-lb">REM</span><span class="n-sleep-lb">LIGHT</span><span class="n-sleep-lb">DEEP</span><span class="n-sleep-lb">7:46 AM</span></div>
-        </div>
-
-        <!-- Heart rate waveform -->
-        <div class="n-section n-fade n-d9">Cardiac</div>
-        <div class="n-wave">
-          <svg viewBox="0 0 300 60" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="nhrG" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#ff3366" stop-opacity="0.3"/>
-                <stop offset="100%" stop-color="#ff3366" stop-opacity="0"/>
-              </linearGradient>
-            </defs>
-            <path d="M0,35 Q15,33 30,36 T60,28 T90,40 T120,25 T150,32 T180,28 T210,35 T240,30 T270,33 T300,28" fill="none" stroke="#ff3366" stroke-width="1.5" opacity="0.8"/>
-            <path d="M0,35 Q15,33 30,36 T60,28 T90,40 T120,25 T150,32 T180,28 T210,35 T240,30 T270,33 T300,28 V60 H0Z" fill="url(#nhrG)"/>
-          </svg>
-        </div>
-        <div class="n-stat-grid" style="margin-top:8px">
-          <div class="n-stat" onclick="nOpen('heartrate')">
-            <div class="n-stat-label">Current HR</div>
-            <div class="n-stat-val n-red n-glow">81<span class="n-stat-unit">BPM</span></div>
-          </div>
-          <div class="n-stat" onclick="nOpen('heartrate')">
-            <div class="n-stat-label">Resting HR</div>
-            <div class="n-stat-val" style="color:rgba(255,51,102,0.6)">78<span class="n-stat-unit">BPM</span></div>
-          </div>
-        </div>
-
-        <!-- Health metrics -->
-        <div class="n-section n-fade n-d10">Health Metrics // 5/5 In Range</div>
-        <div class="n-row" onclick="nOpen('healthBR')"><div class="n-row-name">Breathing Rate</div><div><span class="n-row-val n-cyan">16</span><span class="n-stat-unit"> BRPM</span><span class="n-row-arrow">›</span></div></div>
-        <div class="n-row" onclick="nOpen('healthSpO2')"><div class="n-row-name">SpO₂</div><div><span class="n-row-val n-cyan">97</span><span class="n-stat-unit">%</span><span class="n-row-arrow">›</span></div></div>
-        <div class="n-row" onclick="nOpen('heartrate')"><div class="n-row-name">Resting Heart Rate</div><div><span class="n-row-val n-red">78</span><span class="n-stat-unit"> BPM</span><span class="n-row-arrow">›</span></div></div>
-        <div class="n-row" onclick="nOpen('healthHRV')"><div class="n-row-name">HRV</div><div><span class="n-row-val n-mag">32</span><span class="n-stat-unit"> MS</span><span class="n-row-arrow">›</span></div></div>
-        <div class="n-row" onclick="nOpen('healthTemp')"><div class="n-row-name">Skin Temperature</div><div><span class="n-row-val n-amber">+0.2</span><span class="n-stat-unit">°C</span><span class="n-row-arrow">›</span></div></div>
-
-        <!-- Stress & mindfulness -->
-        <div class="n-section">Stress & Mind</div>
-        <div class="n-stat-grid">
-          <div class="n-stat" onclick="nOpen('stress')">
-            <div class="n-stat-label">Stress Score</div>
-            <div class="n-stat-val n-mag n-glow">88</div>
-            <div class="n-gauge"><div class="n-gauge-fill" style="width:88%;background:#ff00e5"></div></div>
-          </div>
-          <div class="n-stat" onclick="nOpen('mindful')">
-            <div class="n-stat-label">Mindful Days</div>
-            <div class="n-stat-val" style="color:rgba(255,255,255,0.2)">0<span class="n-stat-unit">/ 5</span></div>
-            <div class="n-stat-sub">THIS WEEK</div>
-          </div>
-        </div>
-
-        <!-- Weight -->
-        <div class="n-section">Body Composition</div>
-        <div class="n-stat-grid">
-          <div class="n-stat" onclick="nOpen('weight')">
-            <div class="n-stat-label">Weight</div>
-            <div class="n-stat-val n-white">76<span class="n-stat-unit">KG</span></div>
-            <div class="n-stat-sub">GOAL 72 KG // -4 REMAINING</div>
-            <div class="n-gauge"><div class="n-gauge-fill" style="width:60%;background:linear-gradient(90deg,#00ffd5,#6bc5ff)"></div></div>
-            <div class="n-gauge-labels"><span class="n-gauge-lb">80 START</span><span class="n-gauge-lb">72 GOAL</span></div>
-          </div>
-          <div class="n-stat">
-            <div class="n-stat-label">BMI</div>
-            <div class="n-stat-val n-amber">26.3</div>
-            <div class="n-stat-sub">OVERWEIGHT</div>
-          </div>
-        </div>
-
-        <div style="text-align:center;padding:32px 0;font-size:8px;color:rgba(255,255,255,0.1);letter-spacing:3px;text-transform:uppercase">// END TRANSMISSION //</div>
       </div>
-    </div>
 
-    <div id="nDetails"></div>
+      <!-- Detail Pages -->
+      <div id="sleepDetailPage" class="detail-page"></div>
+      <div id="heartDetailPage" class="detail-page"></div>
+      <div id="stepsDetailPage" class="detail-page"></div>
+      <div id="weightDetailPage" class="detail-page"></div>
+      <div id="activityDetailPage" class="detail-page"></div>
+    </main>
   </div>
 
-</div>
+  <script src="fitbit-api.js"></script>
+  <script>
+    // === GLOBAL STATE ===
+    const api = new FitbitAPI();
+    let currentData = null;
+    let currentTheme = 'fitbit';
+    let isDemoMode = false;
 
-<script src="fitbit-api.js"></script>
-<script>
-// ═══════════════════════════════════════
-// RING ANIMATION (cross-browser)
-// ═══════════════════════════════════════
-// Rings use CSS transition on stroke-dashoffset.
-// Initially set to circumference (hidden). After load, set to target value.
-function animateRings(container) {
-  const rings = (container || document).querySelectorAll('.ring-a');
-  rings.forEach(ring => {
-    const target = ring.getAttribute('data-target');
-    if (target != null) {
-      // Force reflow then set target
-      ring.getBoundingClientRect();
-      ring.style.strokeDashoffset = target;
+    // === DEMO DATA ===
+    const DEMO_DATA = {
+      profile: {
+        user: {
+          displayName: 'Demo User',
+          avatar: '',
+          memberSince: '2020-01-01'
+        }
+      },
+      activity: {
+        summary: {
+          steps: 8543,
+          distance: 6.2,
+          floors: 12,
+          caloriesOut: 2345,
+          activeMinutes: 45,
+          sedentaryMinutes: 680,
+          lightlyActiveMinutes: 180,
+          fairlyActiveMinutes: 30,
+          veryActiveMinutes: 15
+        },
+        goals: {
+          steps: 10000,
+          distance: 8,
+          floors: 10,
+          caloriesOut: 2500
+        }
+      },
+      heartRate: {
+        'activities-heart': [{
+          dateTime: new Date().toISOString().split('T')[0],
+          value: {
+            restingHeartRate: 62,
+            heartRateZones: [
+              { name: 'Out of Range', min: 30, max: 92, minutes: 1320 },
+              { name: 'Fat Burn', min: 92, max: 129, minutes: 120 },
+              { name: 'Cardio', min: 129, max: 157, minutes: 30 },
+              { name: 'Peak', min: 157, max: 220, minutes: 10 }
+            ]
+          }
+        }],
+        'activities-heart-intraday': {
+          dataset: generateIntradayHeartRate()
+        }
+      },
+      intradaySteps: {
+        'activities-steps-intraday': {
+          dataset: generateIntradaySteps()
+        }
+      },
+      steps7d: {
+        'activities-steps': generateSteps7d()
+      },
+      steps30d: {
+        'activities-steps': generateSteps30d()
+      },
+      sleep: {
+        sleep: [{
+          dateOfSleep: new Date().toISOString().split('T')[0],
+          duration: 7.5 * 60 * 60 * 1000,
+          efficiency: 92,
+          minutesAsleep: 450,
+          minutesAwake: 38,
+          timeInBed: 488,
+          levels: {
+            summary: {
+              deep: { count: 3, minutes: 90 },
+              light: { count: 12, minutes: 240 },
+              rem: { count: 5, minutes: 105 },
+              wake: { count: 8, minutes: 38 }
+            },
+            data: generateSleepLevels()
+          }
+        }]
+      },
+      sleep7d: {
+        sleep: generateSleep7d()
+      },
+      weight: {
+        weight: generateWeight30d()
+      },
+      lifetime: {
+        lifetime: {
+          total: {
+            steps: 2543789,
+            distance: 1854.2,
+            floors: 12456
+          }
+        }
+      },
+      activityLog: {
+        activities: [
+          { activityName: 'Run', startTime: '2025-02-21T07:00:00', duration: 1800000, calories: 245 },
+          { activityName: 'Weights', startTime: '2025-02-20T18:30:00', duration: 2700000, calories: 180 }
+        ]
+      },
+      badges: {
+        badges: [
+          { badgeName: '10,000 Steps', timesAchieved: 145 },
+          { badgeName: 'Daily Dozen', timesAchieved: 12 }
+        ]
+      },
+      vo2max: {
+        cardioScore: [{
+          dateTime: new Date().toISOString().split('T')[0],
+          value: { vo2Max: '45-49' }
+        }]
+      },
+      breathingRate: {
+        br: [{
+          dateTime: new Date().toISOString().split('T')[0],
+          value: { breathingRate: 16.5 }
+        }]
+      },
+      spo2: {
+        dateTime: new Date().toISOString().split('T')[0],
+        value: { avg: 96.5, min: 94, max: 98 }
+      },
+      temperature: {
+        tempSkin: [{
+          dateTime: new Date().toISOString().split('T')[0],
+          value: { nightlyRelative: 0.2 }
+        }]
+      }
+    };
+
+    function generateIntradayHeartRate() {
+      const data = [];
+      for (let h = 0; h < 24; h++) {
+        for (let m = 0; m < 60; m += 5) {
+          const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`;
+          let hr;
+          if (h < 6 || h >= 22) hr = 55 + Math.random() * 10; // sleeping
+          else if (h >= 7 && h <= 8) hr = 110 + Math.random() * 30; // morning workout
+          else hr = 65 + Math.random() * 15; // daytime
+          data.push({ time, value: Math.round(hr) });
+        }
+      }
+      return data;
     }
-  });
-}
-// Run on load with slight delay for transition to kick in
-requestAnimationFrame(() => {
-  setTimeout(() => animateRings(), 50);
-});
 
-// ═══════════════════════════════════════
-// THEME SWITCHING
-// ═══════════════════════════════════════
-let currentTheme = 'fitbit';
+    function generateIntradaySteps() {
+      const data = [];
+      for (let h = 0; h < 24; h++) {
+        for (let m = 0; m < 60; m += 15) {
+          const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`;
+          let steps;
+          if (h < 6 || h >= 22) steps = Math.random() * 10;
+          else if (h >= 7 && h <= 8) steps = 400 + Math.random() * 200;
+          else steps = 50 + Math.random() * 150;
+          data.push({ time, value: Math.round(steps) });
+        }
+      }
+      return data;
+    }
 
-function switchTheme(theme) {
-  currentTheme = theme;
-  const app = document.getElementById('app');
-  const tabs = document.querySelectorAll('.style-tab');
-  const views = document.querySelectorAll('.theme-view');
+    function generateSteps7d() {
+      const days = [];
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        days.push({
+          dateTime: date.toISOString().split('T')[0],
+          value: String(6000 + Math.random() * 6000)
+        });
+      }
+      return days;
+    }
 
-  tabs.forEach(t => t.classList.remove('active'));
-  views.forEach(v => v.classList.remove('active'));
+    function generateSteps30d() {
+      const days = [];
+      for (let i = 29; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        days.push({
+          dateTime: date.toISOString().split('T')[0],
+          value: String(5000 + Math.random() * 7000)
+        });
+      }
+      return days;
+    }
 
-  event.currentTarget.classList.add('active');
-  document.getElementById('view-' + theme).classList.add('active');
+    function generateSleepLevels() {
+      const levels = ['wake', 'light', 'deep', 'light', 'rem', 'light', 'wake', 'light', 'deep', 'light', 'rem', 'wake'];
+      const data = [];
+      let time = new Date();
+      time.setHours(23, 0, 0, 0);
+      
+      levels.forEach(level => {
+        const duration = (level === 'wake' ? 5 : 30) + Math.random() * 30;
+        data.push({
+          dateTime: time.toISOString(),
+          level: level,
+          seconds: Math.round(duration * 60)
+        });
+        time = new Date(time.getTime() + duration * 60 * 1000);
+      });
+      
+      return data;
+    }
 
-  // Reset to main in each theme
-  if (theme === 'fitbit') fShowMain();
-  if (theme === 'editorial') eShowMain();
-  if (theme === 'neon') nShowMain();
+    function generateSleep7d() {
+      const sleeps = [];
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        sleeps.push({
+          dateOfSleep: date.toISOString().split('T')[0],
+          duration: (6.5 + Math.random() * 2) * 60 * 60 * 1000,
+          efficiency: 85 + Math.random() * 10,
+          minutesAsleep: 390 + Math.random() * 90
+        });
+      }
+      return sleeps;
+    }
 
-  window.scrollTo(0, 0);
-}
+    function generateWeight30d() {
+      const weights = [];
+      let baseWeight = 75;
+      for (let i = 29; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        baseWeight += (Math.random() - 0.5) * 0.5;
+        weights.push({
+          date: date.toISOString().split('T')[0],
+          weight: baseWeight.toFixed(1),
+          bmi: (baseWeight / 1.75 / 1.75).toFixed(1)
+        });
+      }
+      return weights;
+    }
 
-// ═══════════════════════════════════════
-// FITBIT NAVIGATION
-// ═══════════════════════════════════════
-const fPages = {
-  steps:{title:'Steps',hero:'541',unit:'steps',sub:'Goal: 5,500 · 10%',color:'var(--f-mint)',circ:440,target:397,
-    stats:[{l:'Distance',v:'0.38 km',c:'tc-m'},{l:'Calories',v:'706',c:'tc-c'},{l:'Floors',v:'0'},{l:'Active Min',v:'0',c:'tc-m'}]},
-  sleep:{title:'Sleep',hero:'81',unit:'Sleep Score',sub:'6h 29m · Good',color:'var(--f-lav)',circ:440,target:76,
-    stats:[{l:'Time Asleep',v:'6h 29m',c:'tc-l'},{l:'Time in Bed',v:'7h 12m'},{l:'Fell Asleep',v:'12:34am'},{l:'Woke Up',v:'7:46am'}]},
-  heartrate:{title:'Heart Rate',hero:'81',unit:'bpm',sub:'Resting: 78 bpm',color:'var(--f-coral)',circ:440,target:174,
-    stats:[{l:'Current',v:'81 bpm',c:'tc-c'},{l:'Resting',v:'78 bpm'},{l:"Today's Low",v:'58 bpm'},{l:"Today's High",v:'112 bpm'}]},
-  stress:{title:'Stress',hero:'88',unit:'Score',sub:'Excellent',color:'var(--f-lav)',circ:440,target:53,
-    stats:[{l:'Responsiveness',v:'Good',c:'tc-l'},{l:'Exertion',v:'Low'},{l:'Sleep Pattern',v:'Good',c:'tc-l'},{l:'Week Avg',v:'85'}]},
-  weight:{title:'Weight',hero:'76',unit:'kg',sub:'Goal: 72 kg · 4 kg remaining',color:'',circ:0,target:0,noRing:true,
-    stats:[{l:'Current',v:'76 kg'},{l:'Goal',v:'72 kg',c:'tc-m'},{l:'Lost so Far',v:'4 kg',c:'tc-m',s:'50% of goal'},{l:'BMI',v:'26.3',s:'Overweight'}]},
-  readiness:{title:'Readiness',hero:'55',unit:'Moderate',sub:'Daily Readiness Score',color:'var(--f-lav)',circ:440,target:198,
-    stats:[{l:'Activity',v:'Low',s:'Recovery day'},{l:'Sleep',v:'Good',c:'tc-l',s:'6h 29m'},{l:'HRV',v:'32 ms',s:'Below baseline'},{l:'RHR',v:'78 bpm',c:'tc-c',s:'Above baseline'}]},
-  calories:{title:'Energy',hero:'706',unit:'cal burned',sub:'Goal: 1,400 · 50%',color:'var(--f-coral)',circ:440,target:220,
-    stats:[{l:'BMR',v:'680 cal',s:'Basal'},{l:'Activity',v:'26 cal',c:'tc-c',s:'Exercise'}]},
-  cardio:{title:'Cardio Load',hero:'0',unit:'Cardio load',sub:'Target 1-16',color:'var(--f-mint)',circ:440,target:440,
-    stats:[{l:'Today',v:'0'},{l:'7-Day Total',v:'42',c:'tc-m'}]},
-  exercise:{title:'Exercise',hero:'0',unit:'of 5 days',sub:'This week',color:'',circ:0,target:0,noRing:true,
-    stats:[{l:'This Week',v:'0 days'},{l:'Last Week',v:'3 days',c:'tc-m'},{l:'Total Min',v:'0 min'},{l:'Avg/Session',v:'—'}]},
-  azm:{title:'Active Zone',hero:'0',unit:'minutes',sub:'Goal: 150/week',color:'var(--f-mint)',circ:440,target:440,
-    stats:[{l:'Today',v:'0 min'},{l:'This Week',v:'0 min'},{l:'Fat Burn',v:'0',c:'tc-g'},{l:'Cardio+Peak',v:'0',c:'tc-c'}]},
-  mindful:{title:'Mindful',hero:'0',unit:'of 5 days',sub:'This week',color:'',circ:0,target:0,noRing:true,
-    stats:[{l:'This Week',v:'0 days'},{l:'Last Week',v:'2 days',c:'tc-l'},{l:'Streak',v:'0 days',s:'Best: 5 days'}]},
-  distance:{title:'Distance',hero:'0.38',unit:'km',sub:'Today',color:'',circ:0,target:0,noRing:true,
-    stats:[{l:'Today',v:'0.38 km',c:'tc-m'},{l:'7-Day Avg',v:'3.2 km'}]},
-  hourly:{title:'Hourly',hero:'0',unit:'of 9 hours',sub:'250+ steps per hour',color:'',circ:0,target:0,noRing:true,
-    stats:[{l:'Active Hours',v:'0'},{l:'Goal',v:'9 hours'}]},
-  floors:{title:'Floors',hero:'0',unit:'floors',sub:'Goal: 10',color:'',circ:0,target:0,noRing:true,
-    stats:[{l:'Today',v:'0'},{l:'7-Day Avg',v:'4',c:'tc-m'}]},
-  healthMetrics:{title:'Health Metrics',hero:'5',unit:'of 5 in range',sub:'',color:'var(--f-blue)',circ:440,target:0,noRing:true,
-    stats:[{l:'Breathing Rate',v:'16 brpm',c:'tc-m'},{l:'SpO₂',v:'97%',c:'tc-b'},{l:'RHR',v:'78 bpm',c:'tc-c'},{l:'HRV',v:'32 ms',c:'tc-l'},{l:'Skin Temp',v:'+0.2°',c:'tc-g'}]},
-  healthBR:{title:'Breathing Rate',hero:'16',unit:'brpm',sub:'In range',color:'var(--f-mint)',circ:440,target:200,
-    stats:[{l:'Current',v:'16 brpm',c:'tc-m'},{l:'Your Range',v:'12-20 brpm'}]},
-  healthSpO2:{title:'Blood Oxygen',hero:'97',unit:'%',sub:'Normal',color:'var(--f-blue)',circ:440,target:53,
-    stats:[{l:'Current',v:'97%',c:'tc-b'},{l:'Your Range',v:'95-100%'}]},
-  healthHRV:{title:'HRV',hero:'32',unit:'ms',sub:'In range',color:'var(--f-lav)',circ:440,target:286,
-    stats:[{l:'7-Day Avg',v:'35 ms',c:'tc-l'},{l:'30-Day Avg',v:'38 ms'}]},
-  healthTemp:{title:'Skin Temp',hero:'+0.2',unit:'°C',sub:'Normal variation',color:'var(--f-gold)',circ:440,target:220,
-    stats:[{l:'Today',v:'+0.2°C',c:'tc-g'},{l:'Baseline',v:'±1.0°C'}]},
-};
+    // === INITIALIZATION ===
+    async function init() {
+      await api.init();
 
-let fHistory = ['main'];
+      // Check for OAuth callback
+      if (window.location.hash.includes('access_token')) {
+        api.handleCallback();
+      }
 
-function fOpen(page) {
-  const data = fPages[page];
-  if (!data) return;
-  const container = document.getElementById('fDetails');
-  document.getElementById('fMain').classList.add('hid');
+      // Check authentication state
+      if (!api.isAuthenticated()) {
+        showSetup();
+      } else {
+        showDashboard();
+        loadData();
+      }
 
-  let statsHtml = '<div class="f-dgrid">';
-  data.stats.forEach(s => {
-    statsHtml += `<div class="f-dstat${s.full?' full':''}"><div class="f-dl">${s.l}</div><div class="f-ddv ${s.c||''}">${s.v}</div>${s.s?'<div class="f-dds">'+s.s+'</div>':''}</div>`;
-  });
-  statsHtml += '</div>';
+      // Setup event listeners
+      document.getElementById('connectBtn').addEventListener('click', connectFitbit);
+      document.getElementById('refreshBtn').addEventListener('click', refreshData);
+      document.getElementById('demoBtn').addEventListener('click', toggleDemoMode);
+      document.getElementById('logoutBtn').addEventListener('click', logout);
 
-  let heroHtml = '';
-  if (!data.noRing && data.circ) {
-    heroHtml = `<div class="f-dhero"><div class="f-dring"><svg viewBox="0 0 160 160"><circle cx="80" cy="80" r="70" fill="none" stroke="var(--f-ring-track)" stroke-width="8"/><circle cx="80" cy="80" r="70" fill="none" stroke="${data.color}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${data.circ}" stroke-dashoffset="${data.circ}" class="ring-a" data-target="${data.target}"/></svg><div class="f-dring-c"><div class="f-dv" style="color:${data.color}">${data.hero}</div><div class="f-du">${data.unit}</div></div></div><div class="f-dsub">${data.sub}</div></div>`;
-    // Animate rings in detail page after DOM insert
-    setTimeout(() => animateRings(document.getElementById('fDetails')), 50);
-  } else {
-    heroHtml = `<div class="f-dhero" style="padding-bottom:12px"><div style="font-size:48px;font-family:'Outfit',sans-serif;font-weight:700;letter-spacing:-2px">${data.hero} <span style="font-size:20px;color:var(--f-t2);font-weight:400">${data.unit}</span></div><div class="f-dsub" style="margin-top:4px">${data.sub}</div></div>`;
-  }
+      // Theme switcher
+      document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchTheme(btn.dataset.theme));
+      });
+    }
 
-  container.innerHTML = `<div class="f-detail act" id="fDetailPage"><div class="f-content f-enter">${heroHtml}${statsHtml}</div></div>`;
+    function showSetup() {
+      document.getElementById('setupScreen').classList.remove('hidden');
+      document.getElementById('dashboard').classList.add('hidden');
+    }
 
-  document.getElementById('fBack').classList.add('vis');
-  document.getElementById('fTitle').textContent = data.title;
-  fHistory.push(page);
-  window.scrollTo(0, 0);
-}
+    function showDashboard() {
+      document.getElementById('setupScreen').classList.add('hidden');
+      document.getElementById('dashboard').classList.remove('hidden');
+    }
 
-function fGoBack() {
-  fHistory.pop();
-  fShowMain();
-}
+    function connectFitbit() {
+      const clientId = document.getElementById('clientIdInput').value.trim();
+      if (!clientId) {
+        alert('Please enter your Fitbit Client ID');
+        return;
+      }
+      api.setClientId(clientId);
+      window.location.href = api.getAuthUrl();
+    }
 
-function fShowMain() {
-  document.getElementById('fDetails').innerHTML = '';
-  document.getElementById('fMain').classList.remove('hid');
-  document.getElementById('fBack').classList.remove('vis');
-  document.getElementById('fTitle').textContent = 'Today';
-  fHistory = ['main'];
-  window.scrollTo(0, 0);
-}
+    async function loadData() {
+      try {
+        document.getElementById('loadingIndicator').classList.remove('hidden');
+        document.getElementById('dataContainer').classList.add('hidden');
 
-// ═══════════════════════════════════════
-// EDITORIAL NAVIGATION (reuses fPages data)
-// ═══════════════════════════════════════
-function eOpen(page) {
-  const data = fPages[page];
-  if (!data) return;
-  const container = document.getElementById('eDetails');
-  document.getElementById('eMain').classList.add('hid');
-  document.getElementById('eBack').classList.add('vis');
+        currentData = await api.getAllData();
+        isDemoMode = false;
 
-  let statsHtml = '';
-  data.stats.forEach(s => {
-    statsHtml += `<div class="e-row"><div><div class="e-row-name">${s.l}</div></div><div><div class="e-row-val">${s.v}</div>${s.s?'<div class="e-row-sub">'+s.s+'</div>':''}</div></div>`;
-  });
+        renderDashboard();
+      } catch (error) {
+        console.error('Error loading data:', error);
+        alert('Failed to load data. Please try again or use Demo Mode.');
+      }
+    }
 
-  container.innerHTML = `<div class="e-detail act"><div class="e-content" style="animation:fadeUp 0.3s ease">
-    <div class="e-detail-hero"><div class="e-detail-num">${data.hero}<span class="e-detail-unit"> ${data.unit}</span></div><div class="e-detail-sub">${data.sub}</div></div>
-    ${statsHtml}
-    <div class="e-footer">— End —</div>
-  </div></div>`;
-  window.scrollTo(0, 0);
-}
+    async function refreshData() {
+      api.clearCache();
+      await loadData();
+    }
 
-function eGoBack() { eShowMain(); }
+    function toggleDemoMode() {
+      isDemoMode = !isDemoMode;
+      if (isDemoMode) {
+        currentData = DEMO_DATA;
+        document.getElementById('demoBtn').textContent = '✓ Demo Mode';
+      } else {
+        document.getElementById('demoBtn').textContent = 'Demo Mode';
+        loadData();
+        return;
+      }
+      renderDashboard();
+    }
 
-function eShowMain() {
-  document.getElementById('eDetails').innerHTML = '';
-  document.getElementById('eMain').classList.remove('hid');
-  document.getElementById('eBack').classList.remove('vis');
-  window.scrollTo(0, 0);
-}
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) {
+        api.logout();
+        showSetup();
+      }
+    }
 
-// ═══════════════════════════════════════
-// NEON NAVIGATION (reuses fPages data)
-// ═══════════════════════════════════════
-function nOpen(page) {
-  const data = fPages[page];
-  if (!data) return;
-  const container = document.getElementById('nDetails');
-  document.getElementById('nMain').classList.add('hid');
-  document.getElementById('nBack').classList.add('vis');
+    function switchTheme(theme) {
+      currentTheme = theme;
+      document.body.className = `theme-${theme}`;
+      document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.theme === theme);
+      });
+    }
 
-  let statsHtml = '<div class="n-stat-grid">';
-  data.stats.forEach(s => {
-    const col = s.c ? (s.c==='tc-m'?'n-cyan':s.c==='tc-l'?'n-mag':s.c==='tc-c'?'n-red':s.c==='tc-g'?'n-amber':s.c==='tc-b'?'n-cyan':'') : '';
-    statsHtml += `<div class="n-stat"><div class="n-stat-label">${s.l}</div><div class="n-stat-val ${col}">${s.v}</div>${s.s?'<div class="n-stat-sub">'+s.s.toUpperCase()+'</div>':''}</div>`;
-  });
-  statsHtml += '</div>';
+    // === RENDERING ===
+    function renderDashboard() {
+      if (!currentData) return;
 
-  let ringHtml = '';
-  if (!data.noRing && data.circ) {
-    const neonColor = data.color.includes('mint')?'#00ffd5':data.color.includes('lav')?'#ff00e5':data.color.includes('coral')?'#ff3366':data.color.includes('gold')?'#ffaa00':data.color.includes('blue')?'#00ffd5':'#00ffd5';
-    ringHtml = `<div class="n-ring-wrap"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="6"/><circle cx="60" cy="60" r="52" fill="none" stroke="${neonColor}" stroke-width="6" stroke-linecap="round" stroke-dasharray="327" stroke-dashoffset="${327 - (327 * (1 - data.target / data.circ))}" opacity="0.8" style="filter:drop-shadow(0 0 4px ${neonColor})"/></svg><div class="n-ring-center"><div class="n-ring-val n-glow" style="color:${neonColor}">${data.hero}</div><div class="n-ring-lb">${data.unit}</div></div></div>`;
-  } else {
-    ringHtml = `<div class="n-detail-hero"><div class="n-detail-num n-cyan n-glow">${data.hero}<span style="font-size:16px;color:rgba(255,255,255,0.3);font-weight:400"> ${data.unit}</span></div><div class="n-detail-sub">${data.sub.toUpperCase()}</div></div>`;
-  }
+      document.getElementById('loadingIndicator').classList.add('hidden');
+      document.getElementById('dataContainer').classList.remove('hidden');
 
-  container.innerHTML = `<div class="n-detail act"><div class="n-content n-fade">
-    ${ringHtml}
-    ${statsHtml}
-  </div></div>`;
-  window.scrollTo(0, 0);
-}
+      // Render user profile
+      renderProfile();
 
-function nGoBack() { nShowMain(); }
+      // Render overview
+      renderOverview();
+    }
 
-function nShowMain() {
-  document.getElementById('nDetails').innerHTML = '';
-  document.getElementById('nMain').classList.remove('hid');
-  document.getElementById('nBack').classList.remove('vis');
-  window.scrollTo(0, 0);
-}
+    function renderProfile() {
+      const profile = currentData.profile?.user;
+      if (!profile) return;
 
-// ═══════════════════════════════════════
-// CHARTS
-// ═══════════════════════════════════════
-function makeEditorialChart(id, data) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const max = Math.max(...data);
-  el.innerHTML = '';
-  data.forEach((v, i) => {
-    const bar = document.createElement('div');
-    bar.className = 'e-chart-bar' + (i === data.length - 1 ? ' today' : '');
-    bar.style.height = (max > 0 ? (v / max) * 50 + 10 : 10) + 'px';
-    if (v === 0) bar.style.background = '#eee';
-    el.appendChild(bar);
-  });
-}
+      const userName = document.getElementById('userName');
+      const userAvatar = document.getElementById('userAvatar');
 
-function makeNeonChart(id, data, color) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const max = Math.max(...data);
-  el.innerHTML = '';
-  data.forEach((v, i) => {
-    const bar = document.createElement('div');
-    bar.className = 'n-chart-bar';
-    bar.style.height = (max > 0 ? (v / max) * 40 + 8 : 8) + 'px';
-    bar.style.background = v > 0 ? color : 'rgba(255,255,255,0.03)';
-    bar.style.color = color;
-    if (i === data.length - 1) bar.style.opacity = '0.5';
-    el.appendChild(bar);
-  });
-}
+      userName.textContent = profile.displayName || 'User';
 
-// ═══════════════════════════════════════
-// DATA BINDING — update UI from data object
-// ═══════════════════════════════════════
-let isDemo = false;
-let dashData = null;
+      if (profile.avatar) {
+        userAvatar.innerHTML = `<img src="${profile.avatar}" alt="${profile.displayName}" />`;
+      } else {
+        userAvatar.textContent = profile.displayName?.charAt(0) || 'U';
+      }
+    }
 
-const DEMO_DATA = {
-  steps:541,distance:0.38,floors:0,calories:706,activeMinutes:0,
-  stepsGoal:5500,floorsGoal:10,caloriesGoal:1400,activeMinutesGoal:150,
-  restingHeartRate:78,
-  heartRateZones:[
-    {name:'Out of Range',min:0,max:93,minutes:0},{name:'Fat Burn',min:93,max:123,minutes:12},
-    {name:'Cardio',min:124,max:154,minutes:0},{name:'Peak',min:154,max:220,minutes:0}
-  ],
-  sleepDuration:389,sleepTimeInBed:432,sleepEfficiency:81,
-  sleepStartTime:'2026-02-22T00:34:00.000',sleepEndTime:'2026-02-22T07:46:00.000',
-  sleepStages:{deep:109,light:202,rem:78,wake:43},
-  weight:76,bmi:26.3,
-  spo2:97,breathingRate:16,skinTempChange:0.2,
-  stepsWeek:[4200,6100,3800,5500,7200,4900,541],
-  displayName:'Adarsh',
-};
+    function renderOverview() {
+      const container = document.getElementById('dataContainer');
+      container.innerHTML = '';
 
-function fmtMin(m){
-  if(!m && m!==0) return '—';
-  const h=Math.floor(m/60),mm=m%60;
-  return h>0 ? `${h}h ${mm}m` : `${mm}m`;
-}
-function fmtTime(iso){
-  if(!iso) return '—';
-  try{const d=new Date(iso);return d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch(e){return '—'}
-}
-function pct(val,goal){return goal>0?Math.min(Math.round(val/goal*100),100):0}
-// SVG ring offset: circumference * (1 - progress)
-function ringOff(circ,val,goal){return circ*(1-Math.min(val/(goal||1),1))}
+      const grid = document.createElement('div');
+      grid.className = 'grid';
 
-function updateAllUI(d){
-  dashData = d;
-  const s = d.stepsWeek || [0,0,0,0,0,0,d.steps||0];
+      // Activity summary
+      if (currentData.activity?.summary) {
+        const summary = currentData.activity.summary;
+        const goals = currentData.activity.goals || {};
 
-  // ── Helper to set text by data-bind attribute ──
-  function bind(attr,val){document.querySelectorAll(`[data-bind="${attr}"]`).forEach(el=>{el.textContent=val})}
-  // ── Helper to set ring offset ──
-  function setRing(id,circ,val,goal){
-    const el=document.getElementById(id);
-    if(el)el.setAttribute('stroke-dashoffset',ringOff(circ,val,goal));
-  }
+        if (summary.steps !== undefined) {
+          grid.appendChild(createCard('Steps', formatNumber(summary.steps), `Goal: ${formatNumber(goals.steps || 10000)}`, () => showDetail('steps')));
+        }
 
-  // Fitbit cards — just update the text values via data-bind
-  bind('steps',d.steps ?? 0);
-  bind('distance',(d.distance ?? 0).toFixed(2));
-  bind('floors',d.floors ?? 0);
-  bind('calories',d.calories ?? 0);
-  bind('active-min',d.activeMinutes ?? 0);
-  bind('hr',d.restingHeartRate ? `${(d.restingHeartRate+3)}` : '—');
-  bind('rhr',d.restingHeartRate ?? '—');
-  bind('sleep-dur',fmtMin(d.sleepDuration));
-  bind('sleep-score',d.sleepEfficiency ?? '—');
-  bind('weight',d.weight ?? '—');
-  bind('bmi',d.bmi ? d.bmi.toFixed(1) : '—');
-  bind('spo2',d.spo2 ?? '—');
-  bind('br',d.breathingRate ? d.breathingRate.toFixed(0) : '—');
-  bind('skin-temp',d.skinTempChange != null ? (d.skinTempChange>=0?'+':'')+d.skinTempChange.toFixed(1)+'°' : '—');
-  bind('steps-goal',d.stepsGoal ?? 5500);
-  bind('steps-pct',pct(d.steps||0,d.stepsGoal||5500)+'%');
-  bind('cal-goal',d.caloriesGoal ?? 1400);
-  bind('sleep-start',fmtTime(d.sleepStartTime));
-  bind('sleep-end',fmtTime(d.sleepEndTime));
-  bind('sleep-deep',fmtMin(d.sleepStages?.deep));
-  bind('sleep-light',fmtMin(d.sleepStages?.light));
-  bind('sleep-rem',fmtMin(d.sleepStages?.rem));
-  bind('sleep-wake',fmtMin(d.sleepStages?.wake));
-  bind('weight-to-go',d.weight ? Math.max(0,d.weight-72) + ' kg' : '—');
+        if (summary.distance !== undefined) {
+          grid.appendChild(createCard('Distance', `${summary.distance.toFixed(1)} km`, `Goal: ${goals.distance || 8} km`, () => showDetail('steps')));
+        }
 
-  // Update the detail page data in fPages
-  if(typeof fPages!=='undefined'){
-    fPages.steps.hero = String(d.steps??0);
-    fPages.steps.sub = `Goal: ${(d.stepsGoal||5500).toLocaleString()} · ${pct(d.steps||0,d.stepsGoal||5500)}%`;
-    fPages.steps.stats[0].v = (d.distance??0).toFixed(2)+' km';
-    fPages.steps.stats[1].v = String(d.calories??0);
-    fPages.steps.stats[2].v = String(d.floors??0);
-    fPages.steps.stats[3].v = String(d.activeMinutes??0);
+        if (summary.floors !== undefined) {
+          grid.appendChild(createCard('Floors', formatNumber(summary.floors), `Goal: ${goals.floors || 10}`, () => showDetail('activity')));
+        }
 
-    fPages.sleep.hero = String(d.sleepEfficiency??'—');
-    fPages.sleep.sub = fmtMin(d.sleepDuration)+' · '+(d.sleepEfficiency>=80?'Good':d.sleepEfficiency>=60?'Fair':'Poor');
-    fPages.sleep.stats[0].v = fmtMin(d.sleepDuration);
-    fPages.sleep.stats[1].v = fmtMin(d.sleepTimeInBed);
-    fPages.sleep.stats[2].v = fmtTime(d.sleepStartTime);
-    fPages.sleep.stats[3].v = fmtTime(d.sleepEndTime);
+        if (summary.caloriesOut !== undefined) {
+          grid.appendChild(createCard('Calories', formatNumber(summary.caloriesOut), `Goal: ${formatNumber(goals.caloriesOut || 2500)}`, () => showDetail('activity')));
+        }
 
-    fPages.heartrate.hero = d.restingHeartRate ? String(d.restingHeartRate+3) : '—';
-    fPages.heartrate.stats[0].v = (d.restingHeartRate?d.restingHeartRate+3:'—')+' bpm';
-    fPages.heartrate.stats[1].v = (d.restingHeartRate??'—')+' bpm';
+        if (summary.activeMinutes !== undefined) {
+          grid.appendChild(createCard('Active Minutes', formatNumber(summary.activeMinutes), 'Today', () => showDetail('activity')));
+        }
+      }
 
-    fPages.weight.hero = String(d.weight??'—');
-    fPages.weight.stats[0].v = (d.weight??'—')+' kg';
-    fPages.weight.stats[3].v = d.bmi?d.bmi.toFixed(1):'—';
+      // Heart rate
+      const heartData = currentData.heartRate?.['activities-heart']?.[0]?.value;
+      if (heartData) {
+        if (heartData.restingHeartRate !== undefined) {
+          grid.appendChild(createCard('Resting Heart Rate', `${heartData.restingHeartRate} bpm`, 'Today', () => showDetail('heart')));
+        }
+      }
 
-    fPages.calories.hero = String(d.calories??0);
-    fPages.calories.sub = `Goal: ${(d.caloriesGoal||1400).toLocaleString()} · ${pct(d.calories||0,d.caloriesGoal||1400)}%`;
-  }
+      // Sleep
+      const sleep = currentData.sleep?.sleep?.[0];
+      if (sleep) {
+        if (sleep.minutesAsleep !== undefined) {
+          const hours = Math.floor(sleep.minutesAsleep / 60);
+          const mins = sleep.minutesAsleep % 60;
+          grid.appendChild(createCard('Sleep', `${hours}h ${mins}m`, `Efficiency: ${sleep.efficiency || 0}%`, () => showDetail('sleep')));
+        }
+      }
 
-  // Charts
-  makeEditorialChart('eStepsChart', s);
-  makeNeonChart('nStepsChart', s, '#00ffd5');
-}
+      // Weight
+      const weights = currentData.weight?.weight;
+      if (weights && weights.length > 0) {
+        const latest = weights[weights.length - 1];
+        if (latest.weight !== undefined) {
+          grid.appendChild(createCard('Weight', `${latest.weight} kg`, `BMI: ${latest.bmi || 'N/A'}`, () => showDetail('weight')));
+        }
+      }
 
-// ═══════════════════════════════════════
-// SETUP & AUTH FLOW
-// ═══════════════════════════════════════
-const setupScreen = document.getElementById('setupScreen');
-const loadingOverlay = document.getElementById('loadingOverlay');
-const appEl = document.getElementById('app');
-const userBadge = document.getElementById('userBadge');
+      // VO2 Max
+      const vo2 = currentData.vo2max?.cardioScore?.[0]?.value?.vo2Max;
+      if (vo2) {
+        grid.appendChild(createCard('VO2 Max', vo2, 'Cardio Fitness', () => showDetail('activity')));
+      }
 
-// Show current URL as redirect URI hint
-document.getElementById('currentUrl').textContent = window.location.origin + window.location.pathname;
+      // Breathing Rate
+      const br = currentData.breathingRate?.br?.[0]?.value?.breathingRate;
+      if (br !== undefined) {
+        grid.appendChild(createCard('Breathing Rate', `${br.toFixed(1)} bpm`, 'Last night', null));
+      }
 
-// Pre-fill from saved config
-const savedCfg = FitbitAPI.getConfig();
-if(savedCfg){
-  document.getElementById('setupClientId').value = savedCfg.client_id || '';
-  document.getElementById('setupRedirectUri').value = savedCfg.redirect_uri || '';
-}
+      // SpO2
+      const spo2 = currentData.spo2?.value?.avg;
+      if (spo2 !== undefined) {
+        grid.appendChild(createCard('SpO2', `${spo2.toFixed(1)}%`, `Range: ${currentData.spo2.value.min}-${currentData.spo2.value.max}%`, null));
+      }
 
-function doSetupConnect(){
-  const clientId = document.getElementById('setupClientId').value.trim();
-  const redirectUri = document.getElementById('setupRedirectUri').value.trim();
-  const errEl = document.getElementById('setupError');
-  if(!clientId){
-    errEl.textContent = 'Please enter your Fitbit Client ID';
-    errEl.classList.add('show');
-    return;
-  }
-  errEl.classList.remove('show');
-  FitbitAPI.saveConfig(clientId, redirectUri || undefined);
-  FitbitAPI.startAuth();
-}
+      // Temperature
+      const temp = currentData.temperature?.tempSkin?.[0]?.value?.nightlyRelative;
+      if (temp !== undefined) {
+        grid.appendChild(createCard('Skin Temp', `${temp > 0 ? '+' : ''}${temp.toFixed(1)}°`, 'Variation', null));
+      }
 
-function doSetupDemo(){
-  isDemo = true;
-  setupScreen.classList.add('hidden');
-  appEl.style.display = '';
-  userBadge.classList.remove('hidden');
-  document.getElementById('userBadgeName').textContent = 'Demo Mode';
-  updateAllUI(DEMO_DATA);
-}
+      // Lifetime stats
+      if (currentData.lifetime?.lifetime?.total) {
+        const total = currentData.lifetime.lifetime.total;
+        const lifetimeCard = document.createElement('div');
+        lifetimeCard.className = 'card hero-card';
+        lifetimeCard.innerHTML = `
+          <div class="card-title">Lifetime Stats</div>
+          <div class="hero-stats">
+            ${total.steps ? `<div class="hero-stat-item"><div class="hero-stat-value">${formatNumber(total.steps)}</div><div class="hero-stat-label">Total Steps</div></div>` : ''}
+            ${total.distance ? `<div class="hero-stat-item"><div class="hero-stat-value">${formatNumber(total.distance)}</div><div class="hero-stat-label">Total km</div></div>` : ''}
+            ${total.floors ? `<div class="hero-stat-item"><div class="hero-stat-value">${formatNumber(total.floors)}</div><div class="hero-stat-label">Total Floors</div></div>` : ''}
+          </div>
+        `;
+        grid.appendChild(lifetimeCard);
+      }
 
-function showUserMenu(){
-  if(confirm(isDemo ? 'Switch to live Fitbit data?' : 'Disconnect Fitbit account?')){
-    if(!isDemo) FitbitAPI.logout();
-    isDemo = false;
-    appEl.style.display = 'none';
-    userBadge.classList.add('hidden');
-    setupScreen.classList.remove('hidden');
-  }
-}
+      container.appendChild(grid);
+    }
 
-async function loadLiveData(){
-  loadingOverlay.classList.remove('hidden');
-  try{
-    const raw = await FitbitAPI.fetchAllData();
-    const d = FitbitAPI.extractDashboardData(raw);
-    // Merge with steps week data
-    if(d.stepsWeek) d.stepsWeek = d.stepsWeek;
-    else d.stepsWeek = [0,0,0,0,0,0,d.steps||0];
-    loadingOverlay.classList.add('hidden');
-    setupScreen.classList.add('hidden');
-    appEl.style.display = '';
-    userBadge.classList.remove('hidden');
-    document.getElementById('userBadgeName').textContent = d.displayName || 'Connected';
-    updateAllUI(d);
-  }catch(e){
-    loadingOverlay.classList.add('hidden');
-    console.error('Fitbit API error:', e);
-    const errEl = document.getElementById('setupError');
-    errEl.textContent = 'Error: ' + e.message;
-    errEl.classList.add('show');
-    setupScreen.classList.remove('hidden');
-  }
-}
+    function createCard(title, value, label, onClick) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      if (onClick) {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', onClick);
+      } else {
+        card.style.cursor = 'default';
+      }
 
-// ═══════════════════════════════════════
-// BOOT SEQUENCE
-// ═══════════════════════════════════════
-(async function boot(){
-  // 1. Check if returning from OAuth callback
-  if(FitbitAPI.handleCallback()){
-    await loadLiveData();
-    return;
-  }
-  // 2. Check if already authenticated
-  if(FitbitAPI.isAuthenticated()){
-    await loadLiveData();
-    return;
-  }
-  // 3. Show setup screen
-  setupScreen.classList.remove('hidden');
-})();
+      card.innerHTML = `
+        <div class="card-title">${title}</div>
+        <div class="card-value">${value}</div>
+        <div class="card-label">${label}</div>
+      `;
 
-// ═══════════════════════════════════════
-// MISC
-// ═══════════════════════════════════════
+      return card;
+    }
 
-// Neon time update
-function updateNeonTime() {
-  const el = document.getElementById('neonTime');
-  if (el) {
-    const now = new Date();
-    const h = now.getHours().toString().padStart(2, '0');
-    const m = now.getMinutes().toString().padStart(2, '0');
-    el.textContent = h + ':' + m + ' UTC';
-  }
-}
-updateNeonTime();
-setInterval(updateNeonTime, 60000);
+    // === DETAIL PAGES ===
+    function showDetail(type) {
+      document.getElementById('overviewPage').classList.add('hidden');
+      hideAllDetails();
 
-// Theme from URL hash (only for fitbit/editorial/neon, skip if it's an OAuth callback)
-if(!location.hash.includes('access_token')){
-  const hash = location.hash.replace('#','');
-  if (hash && ['fitbit','editorial','neon'].includes(hash)) {
-    currentTheme = hash;
-    document.querySelectorAll('.style-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.theme-view').forEach(v => v.classList.remove('active'));
-    const idx = {fitbit:0,editorial:1,neon:2}[hash];
-    document.querySelectorAll('.style-tab')[idx].classList.add('active');
-    document.getElementById('view-' + hash).classList.add('active');
-  }
-}
+      const pageId = `${type}DetailPage`;
+      const page = document.getElementById(pageId);
+      page.classList.add('active');
 
-// Swipe back gesture
-let touchStartX = 0;
-document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
-document.addEventListener('touchend', e => {
-  const diff = e.changedTouches[0].clientX - touchStartX;
-  if (diff > 80 && touchStartX < 50) {
-    if (currentTheme === 'fitbit') fGoBack();
-    if (currentTheme === 'editorial') eGoBack();
-    if (currentTheme === 'neon') nGoBack();
-  }
-});
-</script>
+      // Render detail content
+      if (type === 'sleep') renderSleepDetail();
+      else if (type === 'heart') renderHeartDetail();
+      else if (type === 'steps') renderStepsDetail();
+      else if (type === 'weight') renderWeightDetail();
+      else if (type === 'activity') renderActivityDetail();
+    }
+
+    function hideAllDetails() {
+      document.querySelectorAll('.detail-page').forEach(page => {
+        page.classList.remove('active');
+      });
+    }
+
+    function backToOverview() {
+      hideAllDetails();
+      document.getElementById('overviewPage').classList.remove('hidden');
+    }
+
+    function renderSleepDetail() {
+      const page = document.getElementById('sleepDetailPage');
+      const sleep = currentData.sleep?.sleep?.[0];
+      if (!sleep) return;
+
+      let html = `
+        <div class="detail-header">
+          <button class="back-btn" onclick="backToOverview()">‹ Back</button>
+          <h2 class="detail-title">Sleep</h2>
+        </div>
+      `;
+
+      // Sleep timeline
+      if (sleep.levels?.data) {
+        const timeline = renderSleepTimeline(sleep.levels.data);
+        html += `
+          <div class="chart-container">
+            <h3 class="chart-title">Sleep Stages</h3>
+            ${timeline}
+            <div class="legend">
+              <div class="legend-item"><div class="legend-color" style="background: #f39c12;"></div><span>Awake</span></div>
+              <div class="legend-item"><div class="legend-color" style="background: #5b5ea6;"></div><span>Light</span></div>
+              <div class="legend-item"><div class="legend-color" style="background: #3498db;"></div><span>REM</span></div>
+              <div class="legend-item"><div class="legend-color" style="background: #8e44ad;"></div><span>Deep</span></div>
+            </div>
+          </div>
+        `;
+      }
+
+      // Sleep stages summary
+      if (sleep.levels?.summary) {
+        const summary = sleep.levels.summary;
+        html += `<div class="grid">`;
+        if (summary.deep) html += createCard('Deep Sleep', `${summary.deep.minutes} min`, `${((summary.deep.minutes / sleep.minutesAsleep) * 100).toFixed(0)}%`).outerHTML;
+        if (summary.light) html += createCard('Light Sleep', `${summary.light.minutes} min`, `${((summary.light.minutes / sleep.minutesAsleep) * 100).toFixed(0)}%`).outerHTML;
+        if (summary.rem) html += createCard('REM Sleep', `${summary.rem.minutes} min`, `${((summary.rem.minutes / sleep.minutesAsleep) * 100).toFixed(0)}%`).outerHTML;
+        if (summary.wake) html += createCard('Awake', `${summary.wake.minutes} min`, `${((summary.wake.minutes / sleep.minutesAsleep) * 100).toFixed(0)}%`).outerHTML;
+        html += `</div>`;
+      }
+
+      // 7-day sleep trend
+      if (currentData.sleep7d?.sleep) {
+        const chart = renderSleep7dChart(currentData.sleep7d.sleep);
+        html += `
+          <div class="chart-container">
+            <h3 class="chart-title">7-Day Sleep Trend</h3>
+            ${chart}
+          </div>
+        `;
+      }
+
+      page.innerHTML = html;
+    }
+
+    function renderSleepTimeline(levels) {
+      if (!levels || levels.length === 0) return '';
+
+      const startTime = new Date(levels[0].dateTime);
+      const endTime = new Date(levels[levels.length - 1].dateTime).getTime() + (levels[levels.length - 1].seconds * 1000);
+      const totalDuration = endTime - startTime.getTime();
+
+      const colors = {
+        wake: '#f39c12',
+        light: '#5b5ea6',
+        rem: '#3498db',
+        deep: '#8e44ad'
+      };
+
+      let svg = `<svg width="100%" height="80" style="margin: 16px 0;">`;
+
+      levels.forEach(level => {
+        const x = ((new Date(level.dateTime).getTime() - startTime.getTime()) / totalDuration) * 100;
+        const width = (level.seconds * 1000 / totalDuration) * 100;
+        const color = colors[level.level] || '#95a5a6';
+
+        svg += `<rect x="${x}%" y="20" width="${width}%" height="40" fill="${color}" />`;
+      });
+
+      // Time labels
+      const formatTime = (date) => {
+        const h = date.getHours();
+        const m = date.getMinutes();
+        return `${h}:${String(m).padStart(2, '0')}`;
+      };
+
+      svg += `
+        <text x="0" y="75" font-size="12" fill="currentColor">${formatTime(startTime)}</text>
+        <text x="100%" y="75" text-anchor="end" font-size="12" fill="currentColor">${formatTime(new Date(endTime))}</text>
+      `;
+
+      svg += `</svg>`;
+      return svg;
+    }
+
+    function renderSleep7dChart(sleeps) {
+      if (!sleeps || sleeps.length === 0) return '';
+
+      const maxDuration = Math.max(...sleeps.map(s => s.duration || 0));
+      const barWidth = 100 / sleeps.length;
+
+      let svg = `<svg width="100%" height="200" style="margin: 16px 0;">`;
+
+      sleeps.forEach((sleep, i) => {
+        const hours = ((sleep.duration || 0) / 1000 / 60 / 60);
+        const height = (hours / (maxDuration / 1000 / 60 / 60)) * 150;
+        const x = i * barWidth;
+
+        svg += `
+          <rect x="${x + 1}%" y="${170 - height}" width="${barWidth - 2}%" height="${height}" 
+                fill="var(--fitbit-accent)" opacity="0.8" />
+          <text x="${x + barWidth / 2}%" y="195" text-anchor="middle" font-size="10" fill="currentColor">
+            ${new Date(sleep.dateOfSleep).toLocaleDateString('en-US', { weekday: 'short' })}
+          </text>
+        `;
+      });
+
+      svg += `</svg>`;
+      return svg;
+    }
+
+    function renderHeartDetail() {
+      const page = document.getElementById('heartDetailPage');
+      const heartData = currentData.heartRate?.['activities-heart']?.[0]?.value;
+      const intraday = currentData.intradayHeartRate?.['activities-heart-intraday']?.dataset;
+
+      let html = `
+        <div class="detail-header">
+          <button class="back-btn" onclick="backToOverview()">‹ Back</button>
+          <h2 class="detail-title">Heart Rate</h2>
+        </div>
+      `;
+
+      // Intraday chart
+      if (intraday && intraday.length > 0) {
+        const chart = renderHeartRateChart(intraday, heartData?.heartRateZones);
+        html += `
+          <div class="chart-container">
+            <h3 class="chart-title">Heart Rate Today</h3>
+            ${chart}
+            <div class="legend">
+              <div class="legend-item"><div class="legend-color" style="background: #95a5a6;"></div><span>Out of Range</span></div>
+              <div class="legend-item"><div class="legend-color" style="background: #f1c40f;"></div><span>Fat Burn</span></div>
+              <div class="legend-item"><div class="legend-color" style="background: #e67e22;"></div><span>Cardio</span></div>
+              <div class="legend-item"><div class="legend-color" style="background: #e74c3c;"></div><span>Peak</span></div>
+            </div>
+          </div>
+        `;
+      }
+
+      // Heart rate zones
+      if (heartData?.heartRateZones) {
+        html += `<div class="grid">`;
+        heartData.heartRateZones.forEach(zone => {
+          html += createCard(zone.name, `${zone.minutes} min`, `${zone.min}-${zone.max} bpm`).outerHTML;
+        });
+        html += `</div>`;
+      }
+
+      page.innerHTML = html;
+    }
+
+    function renderHeartRateChart(intraday, zones) {
+      if (!intraday || intraday.length === 0) return '';
+
+      const values = intraday.map(d => d.value);
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const avg = values.reduce((a, b) => a + b, 0) / values.length;
+
+      const points = intraday.map((d, i) => {
+        const x = (i / intraday.length) * 100;
+        const y = 180 - ((d.value - min) / (max - min)) * 150;
+        return `${x},${y}`;
+      }).join(' ');
+
+      let svg = `<svg width="100%" height="200" style="margin: 16px 0;">`;
+
+      // Zone backgrounds
+      if (zones) {
+        zones.forEach(zone => {
+          const y1 = 180 - ((zone.max - min) / (max - min)) * 150;
+          const y2 = 180 - ((zone.min - min) / (max - min)) * 150;
+          const colors = {
+            'Out of Range': '#95a5a6',
+            'Fat Burn': '#f1c40f',
+            'Cardio': '#e67e22',
+            'Peak': '#e74c3c'
+          };
+          svg += `<rect x="0" y="${y1}" width="100%" height="${y2 - y1}" fill="${colors[zone.name] || '#ccc'}" opacity="0.1" />`;
+        });
+      }
+
+      // Line
+      svg += `<polyline points="${points}" fill="none" stroke="var(--fitbit-accent)" stroke-width="2" />`;
+
+      // Min/Max/Avg labels
+      svg += `
+        <text x="10" y="20" font-size="12" fill="currentColor">Max: ${Math.round(max)} bpm</text>
+        <text x="10" y="100" font-size="12" fill="currentColor">Avg: ${Math.round(avg)} bpm</text>
+        <text x="10" y="175" font-size="12" fill="currentColor">Min: ${Math.round(min)} bpm</text>
+      `;
+
+      svg += `</svg>`;
+      return svg;
+    }
+
+    function renderStepsDetail() {
+      const page = document.getElementById('stepsDetailPage');
+
+      let html = `
+        <div class="detail-header">
+          <button class="back-btn" onclick="backToOverview()">‹ Back</button>
+          <h2 class="detail-title">Steps</h2>
+        </div>
+      `;
+
+      // Intraday steps
+      if (currentData.intradaySteps?.['activities-steps-intraday']?.dataset) {
+        const chart = renderIntradayStepsChart(currentData.intradaySteps['activities-steps-intraday'].dataset);
+        html += `
+          <div class="chart-container">
+            <h3 class="chart-title">Steps Today (15-min intervals)</h3>
+            ${chart}
+          </div>
+        `;
+      }
+
+      // 7-day chart
+      if (currentData.steps7d?.['activities-steps']) {
+        const chart = renderSteps7dChart(currentData.steps7d['activities-steps']);
+        html += `
+          <div class="chart-container">
+            <h3 class="chart-title">7-Day Steps</h3>
+            ${chart}
+          </div>
+        `;
+      }
+
+      // 30-day trend
+      if (currentData.steps30d?.['activities-steps']) {
+        const chart = renderSteps30dChart(currentData.steps30d['activities-steps']);
+        html += `
+          <div class="chart-container">
+            <h3 class="chart-title">30-Day Trend</h3>
+            ${chart}
+          </div>
+        `;
+      }
+
+      page.innerHTML = html;
+    }
+
+    function renderIntradayStepsChart(dataset) {
+      if (!dataset || dataset.length === 0) return '';
+
+      const maxSteps = Math.max(...dataset.map(d => d.value));
+      const barWidth = 100 / dataset.length;
+
+      let svg = `<svg width="100%" height="200" style="margin: 16px 0;">`;
+
+      dataset.forEach((d, i) => {
+        const height = (d.value / maxSteps) * 150;
+        const x = (i / dataset.length) * 100;
+
+        svg += `<rect x="${x}%" y="${170 - height}" width="${barWidth}%" height="${height}" 
+                fill="var(--fitbit-accent)" opacity="0.7" />`;
+      });
+
+      svg += `</svg>`;
+      return svg;
+    }
+
+    function renderSteps7dChart(steps) {
+      if (!steps || steps.length === 0) return '';
+
+      const maxSteps = Math.max(...steps.map(s => parseInt(s.value)));
+      const barWidth = 100 / steps.length;
+
+      let svg = `<svg width="100%" height="200" style="margin: 16px 0;">`;
+
+      steps.forEach((step, i) => {
+        const value = parseInt(step.value);
+        const height = (value / maxSteps) * 150;
+        const x = i * barWidth;
+
+        svg += `
+          <rect x="${x + 1}%" y="${170 - height}" width="${barWidth - 2}%" height="${height}" 
+                fill="var(--fitbit-accent)" opacity="0.8" />
+          <text x="${x + barWidth / 2}%" y="195" text-anchor="middle" font-size="10" fill="currentColor">
+            ${new Date(step.dateTime).toLocaleDateString('en-US', { weekday: 'short' })}
+          </text>
+        `;
+      });
+
+      svg += `</svg>`;
+      return svg;
+    }
+
+    function renderSteps30dChart(steps) {
+      if (!steps || steps.length === 0) return '';
+
+      const values = steps.map(s => parseInt(s.value));
+      const max = Math.max(...values);
+      const min = Math.min(...values);
+
+      const points = steps.map((s, i) => {
+        const x = (i / steps.length) * 100;
+        const y = 180 - ((parseInt(s.value) - min) / (max - min)) * 150;
+        return `${x},${y}`;
+      }).join(' ');
+
+      let svg = `<svg width="100%" height="200" style="margin: 16px 0;">`;
+      svg += `<polyline points="${points}" fill="none" stroke="var(--fitbit-accent)" stroke-width="2" />`;
+      
+      // Fill area
+      const areaPoints = `0,180 ${points} 100,180`;
+      svg += `<polygon points="${areaPoints}" fill="var(--fitbit-accent)" opacity="0.2" />`;
+
+      svg += `</svg>`;
+      return svg;
+    }
+
+    function renderWeightDetail() {
+      const page = document.getElementById('weightDetailPage');
+      const weights = currentData.weight?.weight;
+
+      let html = `
+        <div class="detail-header">
+          <button class="back-btn" onclick="backToOverview()">‹ Back</button>
+          <h2 class="detail-title">Weight</h2>
+        </div>
+      `;
+
+      if (weights && weights.length > 0) {
+        const chart = renderWeightChart(weights);
+        html += `
+          <div class="chart-container">
+            <h3 class="chart-title">30-Day Weight Trend</h3>
+            ${chart}
+          </div>
+        `;
+
+        const latest = weights[weights.length - 1];
+        html += `<div class="grid">`;
+        html += createCard('Current Weight', `${latest.weight} kg`, latest.date).outerHTML;
+        if (latest.bmi) html += createCard('BMI', latest.bmi, 'Body Mass Index').outerHTML;
+        html += `</div>`;
+      }
+
+      page.innerHTML = html;
+    }
+
+    function renderWeightChart(weights) {
+      if (!weights || weights.length === 0) return '';
+
+      const values = weights.map(w => parseFloat(w.weight));
+      const max = Math.max(...values);
+      const min = Math.min(...values);
+
+      const points = weights.map((w, i) => {
+        const x = (i / weights.length) * 100;
+        const y = 180 - ((parseFloat(w.weight) - min) / (max - min)) * 150;
+        return `${x},${y}`;
+      }).join(' ');
+
+      let svg = `<svg width="100%" height="200" style="margin: 16px 0;">`;
+      
+      // Goal line (example: use first weight as goal)
+      const goal = values[0];
+      const goalY = 180 - ((goal - min) / (max - min)) * 150;
+      svg += `<line x1="0" y1="${goalY}" x2="100%" y2="${goalY}" stroke="var(--fitbit-text-dim)" stroke-width="1" stroke-dasharray="4" />`;
+
+      // Trend line
+      svg += `<polyline points="${points}" fill="none" stroke="var(--fitbit-accent)" stroke-width="2" />`;
+
+      // Points
+      weights.forEach((w, i) => {
+        const x = (i / weights.length) * 100;
+        const y = 180 - ((parseFloat(w.weight) - min) / (max - min)) * 150;
+        svg += `<circle cx="${x}%" cy="${y}" r="3" fill="var(--fitbit-accent)" />`;
+      });
+
+      svg += `</svg>`;
+      return svg;
+    }
+
+    function renderActivityDetail() {
+      const page = document.getElementById('activityDetailPage');
+      const summary = currentData.activity?.summary;
+
+      let html = `
+        <div class="detail-header">
+          <button class="back-btn" onclick="backToOverview()">‹ Back</button>
+          <h2 class="detail-title">Activity</h2>
+        </div>
+      `;
+
+      // Activity breakdown pie chart
+      if (summary) {
+        const chart = renderActivityBreakdownChart(summary);
+        html += `
+          <div class="chart-container">
+            <h3 class="chart-title">Activity Breakdown</h3>
+            ${chart}
+            <div class="legend">
+              <div class="legend-item"><div class="legend-color" style="background: #95a5a6;"></div><span>Sedentary</span></div>
+              <div class="legend-item"><div class="legend-color" style="background: #3498db;"></div><span>Lightly Active</span></div>
+              <div class="legend-item"><div class="legend-color" style="background: #f39c12;"></div><span>Fairly Active</span></div>
+              <div class="legend-item"><div class="legend-color" style="background: #e74c3c;"></div><span>Very Active</span></div>
+            </div>
+          </div>
+        `;
+      }
+
+      // Activity log
+      if (currentData.activityLog?.activities) {
+        html += `<div class="chart-container"><h3 class="chart-title">Recent Activities</h3>`;
+        currentData.activityLog.activities.forEach(activity => {
+          const date = new Date(activity.startTime).toLocaleDateString();
+          const duration = Math.round(activity.duration / 60000);
+          html += `<div style="padding: 12px; border-bottom: 1px solid var(--fitbit-border);">
+            <strong>${activity.activityName}</strong><br>
+            <span style="color: var(--fitbit-text-dim); font-size: 14px;">${date} • ${duration} min • ${activity.calories} cal</span>
+          </div>`;
+        });
+        html += `</div>`;
+      }
+
+      page.innerHTML = html;
+    }
+
+    function renderActivityBreakdownChart(summary) {
+      const sedentary = summary.sedentaryMinutes || 0;
+      const light = summary.lightlyActiveMinutes || 0;
+      const fair = summary.fairlyActiveMinutes || 0;
+      const very = summary.veryActiveMinutes || 0;
+
+      const total = sedentary + light + fair + very;
+      if (total === 0) return '';
+
+      const data = [
+        { label: 'Sedentary', value: sedentary, color: '#95a5a6' },
+        { label: 'Lightly Active', value: light, color: '#3498db' },
+        { label: 'Fairly Active', value: fair, color: '#f39c12' },
+        { label: 'Very Active', value: very, color: '#e74c3c' }
+      ];
+
+      // Donut chart
+      let svg = `<svg width="100%" height="250" viewBox="0 0 200 200" style="margin: 16px 0;">`;
+      
+      const cx = 100, cy = 100, r = 80, innerR = 50;
+      let currentAngle = -90;
+
+      data.forEach(d => {
+        const angle = (d.value / total) * 360;
+        const endAngle = currentAngle + angle;
+
+        const x1 = cx + r * Math.cos(currentAngle * Math.PI / 180);
+        const y1 = cy + r * Math.sin(currentAngle * Math.PI / 180);
+        const x2 = cx + r * Math.cos(endAngle * Math.PI / 180);
+        const y2 = cy + r * Math.sin(endAngle * Math.PI / 180);
+
+        const x3 = cx + innerR * Math.cos(endAngle * Math.PI / 180);
+        const y3 = cy + innerR * Math.sin(endAngle * Math.PI / 180);
+        const x4 = cx + innerR * Math.cos(currentAngle * Math.PI / 180);
+        const y4 = cy + innerR * Math.sin(currentAngle * Math.PI / 180);
+
+        const largeArc = angle > 180 ? 1 : 0;
+
+        svg += `
+          <path d="M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} 
+                   L ${x3} ${y3} A ${innerR} ${innerR} 0 ${largeArc} 0 ${x4} ${y4} Z"
+                fill="${d.color}" />
+        `;
+
+        currentAngle = endAngle;
+      });
+
+      // Center text
+      svg += `
+        <text x="100" y="95" text-anchor="middle" font-size="24" font-weight="700" fill="currentColor">
+          ${Math.round(total / 60)}h
+        </text>
+        <text x="100" y="110" text-anchor="middle" font-size="12" fill="currentColor" opacity="0.7">
+          Total
+        </text>
+      `;
+
+      svg += `</svg>`;
+      return svg;
+    }
+
+    // === UTILITIES ===
+    function formatNumber(num) {
+      return num?.toLocaleString() || '0';
+    }
+
+    // Make backToOverview available globally
+    window.backToOverview = backToOverview;
+
+    // Initialize app
+    init();
+  </script>
 </body>
 </html>
