@@ -16,7 +16,7 @@ const FitbitAPI = (() => {
   const STORAGE_CLIENT = 'fitbit_client_id';
   const STORAGE_CACHE = 'fitbit_data_cache';
 
-  const SCOPES = 'activity heartrate sleep weight profile oxygen_saturation respiratory_rate temperature cardio_fitness';
+  const SCOPES = 'activity heartrate location nutrition profile settings sleep weight oxygen_saturation respiratory_rate temperature cardio_fitness';
 
   let _configClientId = null; // from config.json
 
@@ -128,7 +128,7 @@ const FitbitAPI = (() => {
       heartDay, intradayHR,
       sleepDay, sleep7d,
       weight, spo2, brRate, tempSkin, cardioScore,
-      lifetime, activityLog, badges
+      lifetime, activityLog, badges, hrv
     ] = await Promise.allSettled([
       apiFetch(`/1/user/${uid}/profile.json`),
       apiFetch(`/1/user/${uid}/activities/date/${d}.json`),
@@ -148,6 +148,7 @@ const FitbitAPI = (() => {
       apiFetch(`/1/user/${uid}/activities.json`),
       apiFetch(`/1/user/${uid}/activities/list.json?afterDate=${daysAgo(30)}&sort=desc&limit=10&offset=0`),
       apiFetch(`/1/user/${uid}/badges.json`),
+      apiFetch(`/1/user/${uid}/hrv/date/${d}.json`),
     ]);
 
     const v = r => r.status === 'fulfilled' ? r.value : null;
@@ -158,7 +159,7 @@ const FitbitAPI = (() => {
       sleep: v(sleepDay), sleep7d: v(sleep7d),
       weight: v(weight), spo2: v(spo2), brRate: v(brRate),
       tempSkin: v(tempSkin), cardioScore: v(cardioScore),
-      lifetime: v(lifetime), activityLog: v(activityLog), badges: v(badges),
+      lifetime: v(lifetime), activityLog: v(activityLog), badges: v(badges), hrv: v(hrv),
     };
     setCachedData(data);
     return data;
@@ -306,6 +307,13 @@ const FitbitAPI = (() => {
     // VO2 Max
     if (raw.cardioScore?.cardioScore?.[0]?.value?.vo2Max != null) {
       d.vo2Max = raw.cardioScore.cardioScore[0].value.vo2Max;
+    }
+
+    // HRV
+    if (raw.hrv?.hrv?.[0]?.value) {
+      const hv = raw.hrv.hrv[0].value;
+      if (hv.dailyRmssd != null) d.hrvDaily = hv.dailyRmssd;
+      if (hv.deepRmssd != null) d.hrvDeep = hv.deepRmssd;
     }
 
     // Lifetime stats
