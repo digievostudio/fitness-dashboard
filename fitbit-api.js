@@ -1,19 +1,21 @@
 /**
  * Fitbit Web API Integration
- * Implicit Grant Flow — client-side only, no backend
+ * Authorization Code with PKCE — fully client-side, no backend needed
  * Register at https://dev.fitbit.com/apps — type: "Personal"
  */
 
 class FitbitAPI {
   constructor() {
     this.AUTH_URL = 'https://www.fitbit.com/oauth2/authorize';
+    this.TOKEN_URL = 'https://api.fitbit.com/oauth2/token';
     this.API_BASE = 'https://api.fitbit.com';
     this.SCOPES = 'activity heartrate location nutrition profile settings sleep weight oxygen_saturation respiratory_rate temperature cardio_fitness';
     this.redirectUri = window.location.origin + window.location.pathname;
     this.accessToken = localStorage.getItem('fitbit_token');
+    this.refreshToken = localStorage.getItem('fitbit_refresh_token');
     this.tokenExpiry = localStorage.getItem('fitbit_expiry');
     this.clientId = localStorage.getItem('fitbit_client_id') || '';
-    this._tryLoadConfig();
+    this._configLoaded = this._tryLoadConfig();
   }
 
   async _tryLoadConfig() {
@@ -33,41 +35,113 @@ class FitbitAPI {
     localStorage.setItem('fitbit_client_id', id);
   }
 
-  startOAuth() {
+  // ── PKCE Helpers ──
+  _generateCodeVerifier() {
+    const arr = new Uint8Array(64);
+    crypto.getRandomValues(arr);
+    return btoa(String.fromCharCode(...arr))
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  async _generateCodeChallenge(verifier) {
+    const data = new TextEncoder().encode(verifier);
+    const digest = await crypto.subtle.digest('SHA-256', data);
+    return btoa(String.fromCharCode(...new Uint8Array(digest)))
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  // ── OAuth Flow (PKCE) ──
+  async startOAuth() {
     if (!this.clientId) throw new Error('No client_id');
+    const verifier = this._generateCodeVerifier();
+    const challenge = await this._generateCodeChallenge(verifier);
+    sessionStorage.setItem('fitbit_pkce_verifier', verifier);
     const params = new URLSearchParams({
-      response_type: 'token', client_id: this.clientId,
-      redirect_uri: this.redirectUri, scope: this.SCOPES,
-      expires_in: '2592000'
+      response_type: 'code',
+      client_id: this.clientId,
+      redirect_uri: this.redirectUri,
+      scope: this.SCOPES,
+      code_challenge: challenge,
+      code_challenge_method: 'S256',
     });
     window.location.href = `${this.AUTH_URL}?${params}`;
   }
 
-  handleOAuthCallback() {
-    const hash = window.location.hash;
-    if (!hash || !hash.includes('access_token')) return false;
-    const p = new URLSearchParams(hash.substring(1));
-    const token = p.get('access_token');
-    const expiresIn = parseInt(p.get('expires_in') || '86400');
-    if (token) {
-      this.accessToken = token;
-      this.tokenExpiry = String(Date.now() + expiresIn * 1000);
-      localStorage.setItem('fitbit_token', token);
+  async handleOAuthCallback() {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    if (!code) return false;
+
+    const verifier = sessionStorage.getItem('fitbit_pkce_verifier');
+    if (!verifier) { console.error('PKCE verifier missing'); return false; }
+    sessionStorage.removeItem('fitbit_pkce_verifier');
+
+    try {
+      const res = await fetch(this.TOKEN_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: this.clientId,
+          grant_type: 'authorization_code',
+          code,
+          code_verifier: verifier,
+          redirect_uri: this.redirectUri,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        console.error('Token exchange failed:', err);
+        return false;
+      }
+      const data = await res.json();
+      this.accessToken = data.access_token;
+      this.refreshToken = data.refresh_token || null;
+      this.tokenExpiry = String(Date.now() + (data.expires_in || 28800) * 1000);
+      localStorage.setItem('fitbit_token', this.accessToken);
+      if (this.refreshToken) localStorage.setItem('fitbit_refresh_token', this.refreshToken);
       localStorage.setItem('fitbit_expiry', this.tokenExpiry);
       history.replaceState(null, '', window.location.pathname);
       return true;
+    } catch (e) {
+      console.error('Token exchange error:', e);
+      return false;
     }
-    return false;
+  }
+
+  async _refreshAccessToken() {
+    if (!this.refreshToken || !this.clientId) return false;
+    try {
+      const res = await fetch(this.TOKEN_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: this.clientId,
+          grant_type: 'refresh_token',
+          refresh_token: this.refreshToken,
+        }),
+      });
+      if (!res.ok) return false;
+      const data = await res.json();
+      this.accessToken = data.access_token;
+      this.refreshToken = data.refresh_token || this.refreshToken;
+      this.tokenExpiry = String(Date.now() + (data.expires_in || 28800) * 1000);
+      localStorage.setItem('fitbit_token', this.accessToken);
+      if (this.refreshToken) localStorage.setItem('fitbit_refresh_token', this.refreshToken);
+      localStorage.setItem('fitbit_expiry', this.tokenExpiry);
+      return true;
+    } catch (e) { return false; }
   }
 
   isAuthenticated() {
-    return this.accessToken && this.tokenExpiry && Date.now() < parseInt(this.tokenExpiry);
+    return !!(this.accessToken && this.tokenExpiry && Date.now() < parseInt(this.tokenExpiry));
   }
 
   clearTokens() {
     this.accessToken = null;
+    this.refreshToken = null;
     this.tokenExpiry = null;
     localStorage.removeItem('fitbit_token');
+    localStorage.removeItem('fitbit_refresh_token');
     localStorage.removeItem('fitbit_expiry');
     localStorage.removeItem('fitbit_cache');
   }
@@ -75,9 +149,20 @@ class FitbitAPI {
   async _fetch(path) {
     if (!this.accessToken) throw new Error('Not authenticated');
     const url = `${this.API_BASE}${path}`;
-    const res = await fetch(url, {
+    let res = await fetch(url, {
       headers: { 'Authorization': `Bearer ${this.accessToken}`, 'Accept': 'application/json' }
     });
+    // Auto-refresh on 401
+    if (res.status === 401 && this.refreshToken) {
+      const refreshed = await this._refreshAccessToken();
+      if (refreshed) {
+        res = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${this.accessToken}`, 'Accept': 'application/json' }
+        });
+      } else {
+        this.clearTokens(); throw new Error('Token expired');
+      }
+    }
     if (res.status === 401) { this.clearTokens(); throw new Error('Token expired'); }
     if (res.status === 429) throw new Error('Rate limited');
     if (!res.ok) throw new Error(`API ${res.status}`);
