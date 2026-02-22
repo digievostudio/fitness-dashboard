@@ -8,7 +8,7 @@ class FitbitAPI {
   constructor() {
     this.AUTH_URL = 'https://www.fitbit.com/oauth2/authorize';
     this.TOKEN_URL = 'https://api.fitbit.com/oauth2/token';
-    this.API_BASE = 'https://api.fitbit.com';
+    this.API_BASE = 'https://square-night-3bcc.njandu.workers.dev';
     this.SCOPES = 'activity heartrate location nutrition profile settings sleep weight oxygen_saturation respiratory_rate temperature cardio_fitness';
     this.redirectUri = window.location.origin + window.location.pathname;
     this.accessToken = localStorage.getItem('fitbit_token');
