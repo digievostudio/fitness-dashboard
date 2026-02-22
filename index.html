@@ -677,10 +677,135 @@
       .n-content{max-width:1200px}
       .n-stat-grid{grid-template-columns:repeat(4,1fr)}
     }
+    /* ═══════════════════════════════════════
+       SETUP / LOGIN SCREEN
+    ═══════════════════════════════════════ */
+    .setup-screen{
+      position:fixed;inset:0;z-index:500;
+      display:flex;align-items:center;justify-content:center;
+      background:#0a0f0d;color:#e8efe9;
+      font-family:'DM Sans',sans-serif;
+    }
+    .setup-screen.hidden{display:none}
+    .setup-box{
+      width:100%;max-width:420px;padding:40px 32px;text-align:center;
+    }
+    .setup-logo{font-size:48px;margin-bottom:16px}
+    .setup-title{
+      font-family:'Outfit',sans-serif;font-size:24px;font-weight:700;
+      letter-spacing:-0.5px;margin-bottom:8px;
+    }
+    .setup-sub{font-size:13px;color:#8a9b90;margin-bottom:32px;line-height:1.6}
+    .setup-input{
+      width:100%;padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);
+      background:rgba(255,255,255,0.04);color:#e8efe9;font-size:14px;
+      font-family:'JetBrains Mono',monospace;margin-bottom:12px;
+      outline:none;transition:border-color 0.2s;
+    }
+    .setup-input:focus{border-color:rgba(92,224,184,0.4)}
+    .setup-input::placeholder{color:#5a6b60}
+    .setup-btn{
+      width:100%;padding:14px;border-radius:12px;border:none;
+      background:#5ce0b8;color:#0a0f0d;font-size:14px;font-weight:600;
+      font-family:'DM Sans',sans-serif;cursor:pointer;
+      transition:all 0.2s;margin-top:8px;
+    }
+    .setup-btn:hover{background:#4dd0a8;transform:translateY(-1px)}
+    .setup-btn:active{transform:translateY(0)}
+    .setup-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+    .setup-btn.secondary{
+      background:transparent;color:#5ce0b8;border:1px solid rgba(92,224,184,0.3);
+      margin-top:12px;
+    }
+    .setup-btn.secondary:hover{background:rgba(92,224,184,0.08)}
+    .setup-hint{font-size:11px;color:#5a6b60;margin-top:16px;line-height:1.5}
+    .setup-hint a{color:#5ce0b8;text-decoration:none}
+    .setup-hint a:hover{text-decoration:underline}
+    .setup-error{font-size:12px;color:#ff7f6b;margin-top:8px;display:none}
+    .setup-error.show{display:block}
+    .setup-divider{
+      display:flex;align-items:center;gap:12px;margin:20px 0;
+      font-size:10px;color:#5a6b60;text-transform:uppercase;letter-spacing:1.5px;
+    }
+    .setup-divider::before,.setup-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.06)}
+
+    /* Loading overlay */
+    .loading-overlay{
+      position:fixed;inset:0;z-index:400;
+      display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;
+      background:#0a0f0d;color:#e8efe9;font-family:'DM Sans',sans-serif;
+    }
+    .loading-overlay.hidden{display:none}
+    .loading-spinner{
+      width:36px;height:36px;border-radius:50%;
+      border:3px solid rgba(92,224,184,0.15);border-top-color:#5ce0b8;
+      animation:spin 0.8s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading-text{font-size:13px;color:#8a9b90}
+
+    /* User badge / logout */
+    .user-badge{
+      position:fixed;top:48px;right:16px;z-index:201;
+      display:flex;align-items:center;gap:8px;
+      padding:6px 12px;border-radius:20px;
+      background:rgba(255,255,255,0.06);backdrop-filter:blur(12px);
+      font-family:'DM Sans',sans-serif;font-size:11px;color:#8a9b90;
+      cursor:pointer;transition:all 0.2s;
+    }
+    .user-badge:hover{background:rgba(255,255,255,0.1);color:#e8efe9}
+    .user-badge.hidden{display:none}
+    .user-badge-dot{width:6px;height:6px;border-radius:50%;background:#5ce0b8}
+    @media(min-width:600px){.user-badge{top:52px;right:24px}}
+
+    /* Data source indicator */
+    .data-source{
+      font-family:'DM Sans',sans-serif;font-size:10px;color:#5a6b60;
+      text-align:center;padding:8px 0;letter-spacing:0.5px;
+    }
+    .data-source .live{color:#5ce0b8}
+    .data-source .demo{color:#ffd666}
   </style>
 </head>
 <body>
-<div class="app" id="app">
+
+<!-- ═══ SETUP SCREEN ═══ -->
+<div class="setup-screen" id="setupScreen">
+  <div class="setup-box">
+    <div class="setup-logo">💚</div>
+    <div class="setup-title">Health Dashboard</div>
+    <div class="setup-sub">Connect your Fitbit account to see your real health data across three beautiful presentation styles.</div>
+
+    <input class="setup-input" id="setupClientId" type="text" placeholder="Fitbit Client ID (e.g. 23RXYZ)" autocomplete="off" spellcheck="false">
+    <input class="setup-input" id="setupRedirectUri" type="text" placeholder="Redirect URI (leave blank for current URL)" autocomplete="off" spellcheck="false">
+    <div class="setup-error" id="setupError"></div>
+    <button class="setup-btn" id="setupConnectBtn" onclick="doSetupConnect()">Connect Fitbit Account</button>
+
+    <div class="setup-divider">or</div>
+
+    <button class="setup-btn secondary" onclick="doSetupDemo()">View with Demo Data</button>
+
+    <div class="setup-hint">
+      Register your app at <a href="https://dev.fitbit.com/apps" target="_blank">dev.fitbit.com/apps</a><br>
+      Set type to "Personal", OAuth grant to "Implicit"<br>
+      Redirect URI: <code style="color:#5ce0b8;font-family:'JetBrains Mono',monospace;font-size:10px" id="currentUrl"></code>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LOADING OVERLAY ═══ -->
+<div class="loading-overlay hidden" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Fetching your health data...</div>
+</div>
+
+<!-- ═══ USER BADGE ═══ -->
+<div class="user-badge hidden" id="userBadge" onclick="showUserMenu()">
+  <div class="user-badge-dot"></div>
+  <span id="userBadgeName">Connected</span>
+</div>
+
+<div class="app" id="app" style="display:none">
 
   <!-- ═══ STYLE TABS ═══ -->
   <div class="style-tabs" id="styleTabs">
@@ -719,8 +844,8 @@
         </div>
         <div class="f-quick">
           <div class="f-qs" onclick="fOpen('exercise')"><div class="f-qs-ic bg-md"><span class="tc-m">🏋️</span></div><div class="f-qs-v">0 <span style="font-size:11px;color:var(--f-t2)">of 5</span></div><div class="f-qs-l">Exercise</div></div>
-          <div class="f-qs" onclick="fOpen('sleep')"><div class="f-qs-ic bg-ld"><span class="tc-l">🌙</span></div><div class="f-qs-v">6h 29m</div><div class="f-qs-l">Sleep</div></div>
-          <div class="f-qs" onclick="fOpen('steps')"><div class="f-qs-ic bg-md"><span class="tc-m">👟</span></div><div class="f-qs-v">541</div><div class="f-qs-l">Steps</div></div>
+          <div class="f-qs" onclick="fOpen('sleep')"><div class="f-qs-ic bg-ld"><span class="tc-l">🌙</span></div><div class="f-qs-v" data-bind="sleep-dur">6h 29m</div><div class="f-qs-l">Sleep</div></div>
+          <div class="f-qs" onclick="fOpen('steps')"><div class="f-qs-ic bg-md"><span class="tc-m">👟</span></div><div class="f-qs-v" data-bind="steps">541</div><div class="f-qs-l">Steps</div></div>
         </div>
         <div class="f-banner" style="margin-top:16px"><div class="f-banner-ic">✦</div><div class="f-banner-tx"><strong style="color:var(--f-t1)">Recovery requires rest days</strong><br>You've been working hard, but overtraining can increase strain. Give your body a break.</div></div>
 
@@ -729,16 +854,16 @@
         <div class="f-card" onclick="fOpen('cardio')"><div class="f-card-l"><div class="f-card-t">Cardio load</div><div class="f-card-v tc-m">0</div><div class="f-card-s">Today · Target 1-16</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/></svg></div></div>
         <div class="f-card" onclick="fOpen('exercise')"><div class="f-card-l"><div class="f-card-t">Exercise days</div><div class="f-card-v">0 <span class="u">of 5</span></div><div class="f-card-s">This week</div></div><div class="f-weekly"><div class="f-bars"><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div></div><div class="f-days"><div class="f-day now">S</div><div class="f-day">M</div><div class="f-day">T</div><div class="f-day">W</div><div class="f-day">T</div><div class="f-day">F</div><div class="f-day">S</div></div></div></div>
         <div class="f-card" onclick="fOpen('azm')"><div class="f-card-l"><div class="f-card-t">Active Zone Min</div><div class="f-card-v tc-m">0</div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/></svg></div></div>
-        <div class="f-card" onclick="fOpen('steps')"><div class="f-card-l"><div class="f-card-t">Steps</div><div class="f-card-v tc-m">541</div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-mint)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:124"/></svg></div></div>
+        <div class="f-card" onclick="fOpen('steps')"><div class="f-card-l"><div class="f-card-t">Steps</div><div class="f-card-v tc-m" data-bind="steps">541</div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-mint)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:124"/></svg></div></div>
         <div class="f-card" onclick="fOpen('hourly')"><div class="f-card-l"><div class="f-card-t">Hourly activity</div><div class="f-card-v">0 <span class="u">of 9</span></div><div class="f-card-s">Today</div></div><div class="f-hourly"><div class="f-hrow"><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div></div><div style="display:flex;justify-content:space-between;width:100%"><span style="font-size:9px;color:var(--f-t3)">9am</span><span style="font-size:9px;color:var(--f-t3)">5pm</span></div></div></div>
-        <div class="f-card" onclick="fOpen('distance')"><div class="f-card-l"><div class="f-card-t">Distance</div><div class="f-card-v tc-m">0.38 <span class="u">km</span></div><div class="f-card-s">Today</div></div><div style="font-size:28px;opacity:0.4">📍</div></div>
-        <div class="f-card" onclick="fOpen('calories')"><div class="f-card-l"><div class="f-card-t">Energy burned</div><div class="f-card-v tc-c">706 <span class="u">cal</span></div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-coral)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:69"/></svg></div></div>
+        <div class="f-card" onclick="fOpen('distance')"><div class="f-card-l"><div class="f-card-t">Distance</div><div class="f-card-v tc-m"><span data-bind="distance">0.38</span> <span class="u">km</span></div><div class="f-card-s">Today</div></div><div style="font-size:28px;opacity:0.4">📍</div></div>
+        <div class="f-card" onclick="fOpen('calories')"><div class="f-card-l"><div class="f-card-t">Energy burned</div><div class="f-card-v tc-c"><span data-bind="calories">706</span> <span class="u">cal</span></div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-coral)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:69"/></svg></div></div>
         <div class="f-card" onclick="fOpen('floors')"><div class="f-card-l"><div class="f-card-t">Floors</div><div class="f-card-v tc-m">0</div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/></svg></div></div>
         </div><!-- /f-cards-grid activity -->
 
         <div class="f-section">Recovery</div>
         <div class="f-cards-grid">
-        <div class="f-card" onclick="fOpen('sleep')"><div class="f-card-l"><div class="f-card-t">Sleep duration</div><div class="f-card-v tc-l">6<span class="u">h</span> 29<span class="u">m</span></div><div class="f-card-s">Today · Sleep Score: 81</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-lav)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:24"/></svg></div></div>
+        <div class="f-card" onclick="fOpen('sleep')"><div class="f-card-l"><div class="f-card-t">Sleep duration</div><div class="f-card-v tc-l" data-bind="sleep-dur">6h 29m</div><div class="f-card-s">Today · Sleep Score: <span data-bind="sleep-score">81</span></div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-lav)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:24"/></svg></div></div>
         <div class="f-card"><div class="f-card-l" style="flex-direction:row;align-items:center;gap:12px"><span style="font-size:24px">🌙</span><div><div class="f-card-t">Your sleep profile</div><div style="font-size:16px;font-weight:600;margin-top:2px">The Hedgehog</div></div></div></div>
         <div class="f-card" onclick="fOpen('readiness')"><div class="f-card-l"><div class="f-card-t">Daily readiness</div><div class="f-card-v tc-l">55</div><div class="f-card-s">Today · Moderate</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-lav)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:62"/></svg></div></div>
         </div><!-- /f-cards-grid recovery -->
@@ -752,8 +877,8 @@
         <div class="f-section">Health</div>
         <div class="f-cards-grid">
         <div class="f-card" onclick="fOpen('healthMetrics')"><div class="f-card-l"><div class="f-card-t">Health metrics</div><div class="f-card-v tc-b">5 <span class="u">of 5</span></div><div class="f-card-s">In personal range</div></div><div style="display:flex;gap:2px;align-items:flex-end"><div style="width:6px;height:16px;background:var(--f-blue);border-radius:2px"></div><div style="width:6px;height:22px;background:var(--f-blue);border-radius:2px"></div><div style="width:6px;height:18px;background:var(--f-blue);border-radius:2px"></div><div style="width:6px;height:26px;background:var(--f-blue);border-radius:2px"></div><div style="width:6px;height:20px;background:var(--f-blue);border-radius:2px"></div></div></div>
-        <div class="f-card" onclick="fOpen('heartrate')"><div class="f-card-l"><div class="f-card-t">Heart rate</div><div class="f-card-v tc-c">81 <span class="u">bpm</span></div><div class="f-card-s">78 resting</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-coral)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:42"/></svg></div></div>
-        <div class="f-card" onclick="fOpen('weight')"><div class="f-card-l"><div class="f-card-t">Weight</div><div class="f-card-v">76 <span class="u">kg</span></div><div class="f-card-s">4 kg left to goal</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><span style="font-size:12px;color:var(--f-mint)">↓ 72 kg goal</span></div></div>
+        <div class="f-card" onclick="fOpen('heartrate')"><div class="f-card-l"><div class="f-card-t">Heart rate</div><div class="f-card-v tc-c"><span data-bind="hr">81</span> <span class="u">bpm</span></div><div class="f-card-s"><span data-bind="rhr">78</span> resting</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-coral)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:42"/></svg></div></div>
+        <div class="f-card" onclick="fOpen('weight')"><div class="f-card-l"><div class="f-card-t">Weight</div><div class="f-card-v"><span data-bind="weight">76</span> <span class="u">kg</span></div><div class="f-card-s"><span data-bind="weight-to-go">4 kg</span> left to goal</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><span style="font-size:12px;color:var(--f-mint)">↓ 72 kg goal</span></div></div>
         </div><!-- /f-cards-grid health -->
       </div>
     </div>
@@ -783,7 +908,7 @@
         <div class="e-hero-grid">
           <div class="e-hero-cell" onclick="eOpen('steps')">
             <div class="e-hero-label">Steps</div>
-            <div class="e-hero-num e-accent">541</div>
+            <div class="e-hero-num e-accent" data-bind="steps">541</div>
             <div class="e-hero-note">of 5,500 goal</div>
           </div>
           <div class="e-hero-cell" onclick="eOpen('sleep')">
@@ -793,7 +918,7 @@
           </div>
           <div class="e-hero-cell" onclick="eOpen('heartrate')">
             <div class="e-hero-label">Heart Rate</div>
-            <div class="e-hero-num">81<span class="e-unit"> bpm</span></div>
+            <div class="e-hero-num"><span data-bind="hr">81</span><span class="e-unit"> bpm</span></div>
             <div class="e-hero-note">resting 78</div>
           </div>
           <div class="e-hero-cell" onclick="eOpen('readiness')">
@@ -1078,6 +1203,7 @@
 
 </div>
 
+<script src="fitbit-api.js"></script>
 <script>
 // ═══════════════════════════════════════
 // THEME SWITCHING
@@ -1297,9 +1423,209 @@ function makeNeonChart(id, data, color) {
   });
 }
 
-const stepsWeek = [4200, 6100, 3800, 5500, 7200, 4900, 541];
-makeEditorialChart('eStepsChart', stepsWeek);
-makeNeonChart('nStepsChart', stepsWeek, '#00ffd5');
+// ═══════════════════════════════════════
+// DATA BINDING — update UI from data object
+// ═══════════════════════════════════════
+let isDemo = false;
+let dashData = null;
+
+const DEMO_DATA = {
+  steps:541,distance:0.38,floors:0,calories:706,activeMinutes:0,
+  stepsGoal:5500,floorsGoal:10,caloriesGoal:1400,activeMinutesGoal:150,
+  restingHeartRate:78,
+  heartRateZones:[
+    {name:'Out of Range',min:0,max:93,minutes:0},{name:'Fat Burn',min:93,max:123,minutes:12},
+    {name:'Cardio',min:124,max:154,minutes:0},{name:'Peak',min:154,max:220,minutes:0}
+  ],
+  sleepDuration:389,sleepTimeInBed:432,sleepEfficiency:81,
+  sleepStartTime:'2026-02-22T00:34:00.000',sleepEndTime:'2026-02-22T07:46:00.000',
+  sleepStages:{deep:109,light:202,rem:78,wake:43},
+  weight:76,bmi:26.3,
+  spo2:97,breathingRate:16,skinTempChange:0.2,
+  stepsWeek:[4200,6100,3800,5500,7200,4900,541],
+  displayName:'Adarsh',
+};
+
+function fmtMin(m){
+  if(!m && m!==0) return '—';
+  const h=Math.floor(m/60),mm=m%60;
+  return h>0 ? `${h}h ${mm}m` : `${mm}m`;
+}
+function fmtTime(iso){
+  if(!iso) return '—';
+  try{const d=new Date(iso);return d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch(e){return '—'}
+}
+function pct(val,goal){return goal>0?Math.min(Math.round(val/goal*100),100):0}
+// SVG ring offset: circumference * (1 - progress)
+function ringOff(circ,val,goal){return circ*(1-Math.min(val/(goal||1),1))}
+
+function updateAllUI(d){
+  dashData = d;
+  const s = d.stepsWeek || [0,0,0,0,0,0,d.steps||0];
+
+  // ── Helper to set text by data-bind attribute ──
+  function bind(attr,val){document.querySelectorAll(`[data-bind="${attr}"]`).forEach(el=>{el.textContent=val})}
+  // ── Helper to set ring offset ──
+  function setRing(id,circ,val,goal){
+    const el=document.getElementById(id);
+    if(el)el.setAttribute('stroke-dashoffset',ringOff(circ,val,goal));
+  }
+
+  // Fitbit cards — just update the text values via data-bind
+  bind('steps',d.steps ?? 0);
+  bind('distance',(d.distance ?? 0).toFixed(2));
+  bind('floors',d.floors ?? 0);
+  bind('calories',d.calories ?? 0);
+  bind('active-min',d.activeMinutes ?? 0);
+  bind('hr',d.restingHeartRate ? `${(d.restingHeartRate+3)}` : '—');
+  bind('rhr',d.restingHeartRate ?? '—');
+  bind('sleep-dur',fmtMin(d.sleepDuration));
+  bind('sleep-score',d.sleepEfficiency ?? '—');
+  bind('weight',d.weight ?? '—');
+  bind('bmi',d.bmi ? d.bmi.toFixed(1) : '—');
+  bind('spo2',d.spo2 ?? '—');
+  bind('br',d.breathingRate ? d.breathingRate.toFixed(0) : '—');
+  bind('skin-temp',d.skinTempChange != null ? (d.skinTempChange>=0?'+':'')+d.skinTempChange.toFixed(1)+'°' : '—');
+  bind('steps-goal',d.stepsGoal ?? 5500);
+  bind('steps-pct',pct(d.steps||0,d.stepsGoal||5500)+'%');
+  bind('cal-goal',d.caloriesGoal ?? 1400);
+  bind('sleep-start',fmtTime(d.sleepStartTime));
+  bind('sleep-end',fmtTime(d.sleepEndTime));
+  bind('sleep-deep',fmtMin(d.sleepStages?.deep));
+  bind('sleep-light',fmtMin(d.sleepStages?.light));
+  bind('sleep-rem',fmtMin(d.sleepStages?.rem));
+  bind('sleep-wake',fmtMin(d.sleepStages?.wake));
+  bind('weight-to-go',d.weight ? Math.max(0,d.weight-72) + ' kg' : '—');
+
+  // Update the detail page data in fPages
+  if(typeof fPages!=='undefined'){
+    fPages.steps.hero = String(d.steps??0);
+    fPages.steps.sub = `Goal: ${(d.stepsGoal||5500).toLocaleString()} · ${pct(d.steps||0,d.stepsGoal||5500)}%`;
+    fPages.steps.stats[0].v = (d.distance??0).toFixed(2)+' km';
+    fPages.steps.stats[1].v = String(d.calories??0);
+    fPages.steps.stats[2].v = String(d.floors??0);
+    fPages.steps.stats[3].v = String(d.activeMinutes??0);
+
+    fPages.sleep.hero = String(d.sleepEfficiency??'—');
+    fPages.sleep.sub = fmtMin(d.sleepDuration)+' · '+(d.sleepEfficiency>=80?'Good':d.sleepEfficiency>=60?'Fair':'Poor');
+    fPages.sleep.stats[0].v = fmtMin(d.sleepDuration);
+    fPages.sleep.stats[1].v = fmtMin(d.sleepTimeInBed);
+    fPages.sleep.stats[2].v = fmtTime(d.sleepStartTime);
+    fPages.sleep.stats[3].v = fmtTime(d.sleepEndTime);
+
+    fPages.heartrate.hero = d.restingHeartRate ? String(d.restingHeartRate+3) : '—';
+    fPages.heartrate.stats[0].v = (d.restingHeartRate?d.restingHeartRate+3:'—')+' bpm';
+    fPages.heartrate.stats[1].v = (d.restingHeartRate??'—')+' bpm';
+
+    fPages.weight.hero = String(d.weight??'—');
+    fPages.weight.stats[0].v = (d.weight??'—')+' kg';
+    fPages.weight.stats[3].v = d.bmi?d.bmi.toFixed(1):'—';
+
+    fPages.calories.hero = String(d.calories??0);
+    fPages.calories.sub = `Goal: ${(d.caloriesGoal||1400).toLocaleString()} · ${pct(d.calories||0,d.caloriesGoal||1400)}%`;
+  }
+
+  // Charts
+  makeEditorialChart('eStepsChart', s);
+  makeNeonChart('nStepsChart', s, '#00ffd5');
+}
+
+// ═══════════════════════════════════════
+// SETUP & AUTH FLOW
+// ═══════════════════════════════════════
+const setupScreen = document.getElementById('setupScreen');
+const loadingOverlay = document.getElementById('loadingOverlay');
+const appEl = document.getElementById('app');
+const userBadge = document.getElementById('userBadge');
+
+// Show current URL as redirect URI hint
+document.getElementById('currentUrl').textContent = window.location.origin + window.location.pathname;
+
+// Pre-fill from saved config
+const savedCfg = FitbitAPI.getConfig();
+if(savedCfg){
+  document.getElementById('setupClientId').value = savedCfg.client_id || '';
+  document.getElementById('setupRedirectUri').value = savedCfg.redirect_uri || '';
+}
+
+function doSetupConnect(){
+  const clientId = document.getElementById('setupClientId').value.trim();
+  const redirectUri = document.getElementById('setupRedirectUri').value.trim();
+  const errEl = document.getElementById('setupError');
+  if(!clientId){
+    errEl.textContent = 'Please enter your Fitbit Client ID';
+    errEl.classList.add('show');
+    return;
+  }
+  errEl.classList.remove('show');
+  FitbitAPI.saveConfig(clientId, redirectUri || undefined);
+  FitbitAPI.startAuth();
+}
+
+function doSetupDemo(){
+  isDemo = true;
+  setupScreen.classList.add('hidden');
+  appEl.style.display = '';
+  userBadge.classList.remove('hidden');
+  document.getElementById('userBadgeName').textContent = 'Demo Mode';
+  updateAllUI(DEMO_DATA);
+}
+
+function showUserMenu(){
+  if(confirm(isDemo ? 'Switch to live Fitbit data?' : 'Disconnect Fitbit account?')){
+    if(!isDemo) FitbitAPI.logout();
+    isDemo = false;
+    appEl.style.display = 'none';
+    userBadge.classList.add('hidden');
+    setupScreen.classList.remove('hidden');
+  }
+}
+
+async function loadLiveData(){
+  loadingOverlay.classList.remove('hidden');
+  try{
+    const raw = await FitbitAPI.fetchAllData();
+    const d = FitbitAPI.extractDashboardData(raw);
+    // Merge with steps week data
+    if(d.stepsWeek) d.stepsWeek = d.stepsWeek;
+    else d.stepsWeek = [0,0,0,0,0,0,d.steps||0];
+    loadingOverlay.classList.add('hidden');
+    setupScreen.classList.add('hidden');
+    appEl.style.display = '';
+    userBadge.classList.remove('hidden');
+    document.getElementById('userBadgeName').textContent = d.displayName || 'Connected';
+    updateAllUI(d);
+  }catch(e){
+    loadingOverlay.classList.add('hidden');
+    console.error('Fitbit API error:', e);
+    const errEl = document.getElementById('setupError');
+    errEl.textContent = 'Error: ' + e.message;
+    errEl.classList.add('show');
+    setupScreen.classList.remove('hidden');
+  }
+}
+
+// ═══════════════════════════════════════
+// BOOT SEQUENCE
+// ═══════════════════════════════════════
+(async function boot(){
+  // 1. Check if returning from OAuth callback
+  if(FitbitAPI.handleCallback()){
+    await loadLiveData();
+    return;
+  }
+  // 2. Check if already authenticated
+  if(FitbitAPI.isAuthenticated()){
+    await loadLiveData();
+    return;
+  }
+  // 3. Show setup screen
+  setupScreen.classList.remove('hidden');
+})();
+
+// ═══════════════════════════════════════
+// MISC
+// ═══════════════════════════════════════
 
 // Neon time update
 function updateNeonTime() {
@@ -1314,15 +1640,17 @@ function updateNeonTime() {
 updateNeonTime();
 setInterval(updateNeonTime, 60000);
 
-// Auto-switch theme from URL hash
-const hash = location.hash.replace('#','');
-if (hash && ['fitbit','editorial','neon'].includes(hash)) {
-  currentTheme = hash;
-  document.querySelectorAll('.style-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.theme-view').forEach(v => v.classList.remove('active'));
-  const idx = {fitbit:0,editorial:1,neon:2}[hash];
-  document.querySelectorAll('.style-tab')[idx].classList.add('active');
-  document.getElementById('view-' + hash).classList.add('active');
+// Theme from URL hash (only for fitbit/editorial/neon, skip if it's an OAuth callback)
+if(!location.hash.includes('access_token')){
+  const hash = location.hash.replace('#','');
+  if (hash && ['fitbit','editorial','neon'].includes(hash)) {
+    currentTheme = hash;
+    document.querySelectorAll('.style-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.theme-view').forEach(v => v.classList.remove('active'));
+    const idx = {fitbit:0,editorial:1,neon:2}[hash];
+    document.querySelectorAll('.style-tab')[idx].classList.add('active');
+    document.getElementById('view-' + hash).classList.add('active');
+  }
 }
 
 // Swipe back gesture

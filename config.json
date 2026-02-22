@@ -1,0 +1,7 @@
+{
+  "fitbit": {
+    "client_id": "",
+    "redirect_uri": "",
+    "scopes": "activity heartrate sleep weight profile oxygen_saturation respiratory_rate temperature cardio_fitness"
+  }
+}
