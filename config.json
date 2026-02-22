@@ -1,6 +1,6 @@
 {
   "fitbit": {
-    "client_id": "",
+    "client_id": "23V36T",
     "redirect_uri": "",
     "scopes": "activity heartrate sleep weight profile oxygen_saturation respiratory_rate temperature cardio_fitness"
   }
