@@ -90,12 +90,12 @@
 
     /* Overview ring */
     .f-hero{display:flex;flex-direction:column;align-items:center;padding:28px 0 20px}
-    .f-ring-wrap{position:relative;width:200px;height:200px}
+    .f-ring-wrap{position:relative;width:min(200px, 52vw);height:min(200px, 52vw)}
     .f-ring-wrap svg{width:100%;height:100%;transform:rotate(-90deg)}
     .f-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
     .f-ring-center .ri{font-size:18px;opacity:0.7}
     .f-ring-center .rl{font-size:11px;color:var(--f-t2);text-transform:uppercase;letter-spacing:0.8px}
-    .f-ring-center .rv{font-family:'Outfit',sans-serif;font-size:28px;font-weight:700;letter-spacing:-1px}
+    .f-ring-center .rv{font-family:'Outfit',sans-serif;font-size:clamp(18px, 7vw, 28px);font-weight:700;letter-spacing:-1px}
     .f-ring-center .rs{font-size:12px;color:var(--f-t2)}
 
     .f-quick{display:flex;justify-content:center;gap:28px;padding:16px 0 8px}
@@ -214,8 +214,11 @@
     .bg-md{background:var(--f-mint-d)}.bg-ld{background:var(--f-lav-d)}.bg-cd{background:var(--f-coral-d)}.bg-gd{background:var(--f-gold-d)}.bg-bd{background:var(--f-blue-d)}
 
     @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes ringFill{from{stroke-dashoffset:var(--circ)}to{stroke-dashoffset:var(--target)}}
-    .ring-a{animation:ringFill 1s cubic-bezier(0.4,0,0.2,1) forwards}
+    /* Ring animation — use transition instead of keyframes for cross-browser compat.
+       Set stroke-dashoffset to circumference initially, JS/CSS sets final value. */
+    .ring-a{
+      transition:stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1);
+    }
     .fade-up{animation:fadeUp 0.4s ease}
     .f-enter{animation:slideIn 0.3s ease forwards}
     @keyframes slideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
@@ -830,9 +833,9 @@
           <div class="f-ring-wrap">
             <svg viewBox="0 0 200 200">
               <circle cx="100" cy="100" r="88" fill="none" stroke="var(--f-ring-track)" stroke-width="10"/>
-              <circle cx="100" cy="100" r="88" fill="none" stroke="var(--f-mint)" stroke-width="10" stroke-linecap="round" stroke-dasharray="553" stroke-dashoffset="553" class="ring-a" style="--circ:553;--target:553"/>
+              <circle cx="100" cy="100" r="88" fill="none" stroke="var(--f-mint)" stroke-width="10" stroke-linecap="round" stroke-dasharray="553" stroke-dashoffset="553" class="ring-a" data-target="553"/>
               <circle cx="100" cy="100" r="74" fill="none" stroke="var(--f-ring-track)" stroke-width="10"/>
-              <circle cx="100" cy="100" r="74" fill="none" stroke="var(--f-lav)" stroke-width="10" stroke-linecap="round" stroke-dasharray="465" stroke-dashoffset="465" class="ring-a" style="--circ:465;--target:209"/>
+              <circle cx="100" cy="100" r="74" fill="none" stroke="var(--f-lav)" stroke-width="10" stroke-linecap="round" stroke-dasharray="465" stroke-dashoffset="465" class="ring-a" data-target="209"/>
             </svg>
             <div class="f-ring-center">
               <div class="ri">💚</div>
@@ -854,30 +857,30 @@
         <div class="f-card" onclick="fOpen('cardio')"><div class="f-card-l"><div class="f-card-t">Cardio load</div><div class="f-card-v tc-m">0</div><div class="f-card-s">Today · Target 1-16</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/></svg></div></div>
         <div class="f-card" onclick="fOpen('exercise')"><div class="f-card-l"><div class="f-card-t">Exercise days</div><div class="f-card-v">0 <span class="u">of 5</span></div><div class="f-card-s">This week</div></div><div class="f-weekly"><div class="f-bars"><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div></div><div class="f-days"><div class="f-day now">S</div><div class="f-day">M</div><div class="f-day">T</div><div class="f-day">W</div><div class="f-day">T</div><div class="f-day">F</div><div class="f-day">S</div></div></div></div>
         <div class="f-card" onclick="fOpen('azm')"><div class="f-card-l"><div class="f-card-t">Active Zone Min</div><div class="f-card-v tc-m">0</div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/></svg></div></div>
-        <div class="f-card" onclick="fOpen('steps')"><div class="f-card-l"><div class="f-card-t">Steps</div><div class="f-card-v tc-m" data-bind="steps">541</div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-mint)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:124"/></svg></div></div>
+        <div class="f-card" onclick="fOpen('steps')"><div class="f-card-l"><div class="f-card-t">Steps</div><div class="f-card-v tc-m" data-bind="steps">541</div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-mint)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" data-target="124"/></svg></div></div>
         <div class="f-card" onclick="fOpen('hourly')"><div class="f-card-l"><div class="f-card-t">Hourly activity</div><div class="f-card-v">0 <span class="u">of 9</span></div><div class="f-card-s">Today</div></div><div class="f-hourly"><div class="f-hrow"><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div></div><div style="display:flex;justify-content:space-between;width:100%"><span style="font-size:9px;color:var(--f-t3)">9am</span><span style="font-size:9px;color:var(--f-t3)">5pm</span></div></div></div>
         <div class="f-card" onclick="fOpen('distance')"><div class="f-card-l"><div class="f-card-t">Distance</div><div class="f-card-v tc-m"><span data-bind="distance">0.38</span> <span class="u">km</span></div><div class="f-card-s">Today</div></div><div style="font-size:28px;opacity:0.4">📍</div></div>
-        <div class="f-card" onclick="fOpen('calories')"><div class="f-card-l"><div class="f-card-t">Energy burned</div><div class="f-card-v tc-c"><span data-bind="calories">706</span> <span class="u">cal</span></div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-coral)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:69"/></svg></div></div>
+        <div class="f-card" onclick="fOpen('calories')"><div class="f-card-l"><div class="f-card-t">Energy burned</div><div class="f-card-v tc-c"><span data-bind="calories">706</span> <span class="u">cal</span></div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-coral)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" data-target="69"/></svg></div></div>
         <div class="f-card" onclick="fOpen('floors')"><div class="f-card-l"><div class="f-card-t">Floors</div><div class="f-card-v tc-m">0</div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/></svg></div></div>
         </div><!-- /f-cards-grid activity -->
 
         <div class="f-section">Recovery</div>
         <div class="f-cards-grid">
-        <div class="f-card" onclick="fOpen('sleep')"><div class="f-card-l"><div class="f-card-t">Sleep duration</div><div class="f-card-v tc-l" data-bind="sleep-dur">6h 29m</div><div class="f-card-s">Today · Sleep Score: <span data-bind="sleep-score">81</span></div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-lav)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:24"/></svg></div></div>
+        <div class="f-card" onclick="fOpen('sleep')"><div class="f-card-l"><div class="f-card-t">Sleep duration</div><div class="f-card-v tc-l" data-bind="sleep-dur">6h 29m</div><div class="f-card-s">Today · Sleep Score: <span data-bind="sleep-score">81</span></div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-lav)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" data-target="24"/></svg></div></div>
         <div class="f-card"><div class="f-card-l" style="flex-direction:row;align-items:center;gap:12px"><span style="font-size:24px">🌙</span><div><div class="f-card-t">Your sleep profile</div><div style="font-size:16px;font-weight:600;margin-top:2px">The Hedgehog</div></div></div></div>
-        <div class="f-card" onclick="fOpen('readiness')"><div class="f-card-l"><div class="f-card-t">Daily readiness</div><div class="f-card-v tc-l">55</div><div class="f-card-s">Today · Moderate</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-lav)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:62"/></svg></div></div>
+        <div class="f-card" onclick="fOpen('readiness')"><div class="f-card-l"><div class="f-card-t">Daily readiness</div><div class="f-card-v tc-l">55</div><div class="f-card-s">Today · Moderate</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-lav)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" data-target="62"/></svg></div></div>
         </div><!-- /f-cards-grid recovery -->
 
         <div class="f-section">Stress & mindfulness</div>
         <div class="f-cards-grid">
         <div class="f-card" onclick="fOpen('mindful')"><div class="f-card-l"><div class="f-card-t">Mindful days</div><div class="f-card-v">0 <span class="u">of 5</span></div><div class="f-card-s">This week</div></div><div class="f-weekly"><div class="f-bars"><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div></div><div class="f-days"><div class="f-day now">S</div><div class="f-day">M</div><div class="f-day">T</div><div class="f-day">W</div><div class="f-day">T</div><div class="f-day">F</div><div class="f-day">S</div></div></div></div>
-        <div class="f-card" onclick="fOpen('stress')"><div class="f-card-l"><div class="f-card-t">Stress management score</div><div class="f-card-v tc-l">88</div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-lav)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:17"/></svg></div></div>
+        <div class="f-card" onclick="fOpen('stress')"><div class="f-card-l"><div class="f-card-t">Stress management score</div><div class="f-card-v tc-l">88</div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-lav)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" data-target="17"/></svg></div></div>
         </div><!-- /f-cards-grid stress -->
 
         <div class="f-section">Health</div>
         <div class="f-cards-grid">
         <div class="f-card" onclick="fOpen('healthMetrics')"><div class="f-card-l"><div class="f-card-t">Health metrics</div><div class="f-card-v tc-b">5 <span class="u">of 5</span></div><div class="f-card-s">In personal range</div></div><div style="display:flex;gap:2px;align-items:flex-end"><div style="width:6px;height:16px;background:var(--f-blue);border-radius:2px"></div><div style="width:6px;height:22px;background:var(--f-blue);border-radius:2px"></div><div style="width:6px;height:18px;background:var(--f-blue);border-radius:2px"></div><div style="width:6px;height:26px;background:var(--f-blue);border-radius:2px"></div><div style="width:6px;height:20px;background:var(--f-blue);border-radius:2px"></div></div></div>
-        <div class="f-card" onclick="fOpen('heartrate')"><div class="f-card-l"><div class="f-card-t">Heart rate</div><div class="f-card-v tc-c"><span data-bind="hr">81</span> <span class="u">bpm</span></div><div class="f-card-s"><span data-bind="rhr">78</span> resting</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-coral)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:42"/></svg></div></div>
+        <div class="f-card" onclick="fOpen('heartrate')"><div class="f-card-l"><div class="f-card-t">Heart rate</div><div class="f-card-v tc-c"><span data-bind="hr">81</span> <span class="u">bpm</span></div><div class="f-card-s"><span data-bind="rhr">78</span> resting</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-coral)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" data-target="42"/></svg></div></div>
         <div class="f-card" onclick="fOpen('weight')"><div class="f-card-l"><div class="f-card-t">Weight</div><div class="f-card-v"><span data-bind="weight">76</span> <span class="u">kg</span></div><div class="f-card-s"><span data-bind="weight-to-go">4 kg</span> left to goal</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><span style="font-size:12px;color:var(--f-mint)">↓ 72 kg goal</span></div></div>
         </div><!-- /f-cards-grid health -->
       </div>
@@ -1206,6 +1209,27 @@
 <script src="fitbit-api.js"></script>
 <script>
 // ═══════════════════════════════════════
+// RING ANIMATION (cross-browser)
+// ═══════════════════════════════════════
+// Rings use CSS transition on stroke-dashoffset.
+// Initially set to circumference (hidden). After load, set to target value.
+function animateRings(container) {
+  const rings = (container || document).querySelectorAll('.ring-a');
+  rings.forEach(ring => {
+    const target = ring.getAttribute('data-target');
+    if (target != null) {
+      // Force reflow then set target
+      ring.getBoundingClientRect();
+      ring.style.strokeDashoffset = target;
+    }
+  });
+}
+// Run on load with slight delay for transition to kick in
+requestAnimationFrame(() => {
+  setTimeout(() => animateRings(), 50);
+});
+
+// ═══════════════════════════════════════
 // THEME SWITCHING
 // ═══════════════════════════════════════
 let currentTheme = 'fitbit';
@@ -1290,7 +1314,9 @@ function fOpen(page) {
 
   let heroHtml = '';
   if (!data.noRing && data.circ) {
-    heroHtml = `<div class="f-dhero"><div class="f-dring"><svg viewBox="0 0 160 160"><circle cx="80" cy="80" r="70" fill="none" stroke="var(--f-ring-track)" stroke-width="8"/><circle cx="80" cy="80" r="70" fill="none" stroke="${data.color}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${data.circ}" stroke-dashoffset="${data.circ}" class="ring-a" style="--circ:${data.circ};--target:${data.target}"/></svg><div class="f-dring-c"><div class="f-dv" style="color:${data.color}">${data.hero}</div><div class="f-du">${data.unit}</div></div></div><div class="f-dsub">${data.sub}</div></div>`;
+    heroHtml = `<div class="f-dhero"><div class="f-dring"><svg viewBox="0 0 160 160"><circle cx="80" cy="80" r="70" fill="none" stroke="var(--f-ring-track)" stroke-width="8"/><circle cx="80" cy="80" r="70" fill="none" stroke="${data.color}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${data.circ}" stroke-dashoffset="${data.circ}" class="ring-a" data-target="${data.target}"/></svg><div class="f-dring-c"><div class="f-dv" style="color:${data.color}">${data.hero}</div><div class="f-du">${data.unit}</div></div></div><div class="f-dsub">${data.sub}</div></div>`;
+    // Animate rings in detail page after DOM insert
+    setTimeout(() => animateRings(document.getElementById('fDetails')), 50);
   } else {
     heroHtml = `<div class="f-dhero" style="padding-bottom:12px"><div style="font-size:48px;font-family:'Outfit',sans-serif;font-weight:700;letter-spacing:-2px">${data.hero} <span style="font-size:20px;color:var(--f-t2);font-weight:400">${data.unit}</span></div><div class="f-dsub" style="margin-top:4px">${data.sub}</div></div>`;
   }
