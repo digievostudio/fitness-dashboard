@@ -8,7 +8,7 @@ const FITBIT_API = 'https://api.fitbit.com';
 
 function corsHeaders(origin) {
   return {
-    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Origin': origin || '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Authorization, Content-Type, Accept',
     'Access-Control-Max-Age': '86400',
@@ -17,17 +17,11 @@ function corsHeaders(origin) {
 
 export default {
   async fetch(request, env) {
-    const origin = request.headers.get('Origin') || '';
-    const allowed = env.ALLOWED_ORIGIN || 'https://digievostudio.github.io';
-
-    // Only allow our dashboard origin
-    if (origin && !origin.startsWith(allowed)) {
-      return new Response('Forbidden', { status: 403 });
-    }
+    const origin = request.headers.get('Origin') || '*';
 
     // Handle CORS preflight
     if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: corsHeaders(allowed) });
+      return new Response(null, { status: 204, headers: corsHeaders(origin) });
     }
 
     // Extract the Fitbit API path from the request URL
@@ -51,7 +45,7 @@ export default {
       // Clone response and add CORS headers
       const body = await resp.arrayBuffer();
       const responseHeaders = new Headers(resp.headers);
-      Object.entries(corsHeaders(allowed)).forEach(([k, v]) => responseHeaders.set(k, v));
+      Object.entries(corsHeaders(origin)).forEach(([k, v]) => responseHeaders.set(k, v));
 
       return new Response(body, {
         status: resp.status,
@@ -61,7 +55,7 @@ export default {
     } catch (e) {
       return new Response(JSON.stringify({ error: e.message }), {
         status: 502,
-        headers: { ...corsHeaders(allowed), 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders(origin), 'Content-Type': 'application/json' },
       });
     }
   },
