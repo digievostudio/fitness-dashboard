@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Health Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600&family=Source+Serif+4:opsz,wght@8..60,300;8..60,400;8..60,600;8..60,700&family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════
+       BASE RESET & SHARED
+    ═══════════════════════════════════════ */
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:hidden}
+    body{min-height:100vh;min-height:100dvh}
+    .app{max-width:430px;margin:0 auto;min-height:100vh;min-height:100dvh;position:relative;overflow-x:hidden}
+
+    /* ═══════════════════════════════════════
+       STYLE TABS
+    ═══════════════════════════════════════ */
+    .style-tabs{
+      position:fixed;top:0;left:50%;transform:translateX(-50%);
+      width:100%;max-width:430px;z-index:200;
+      display:flex;gap:0;
+      background:rgba(10,15,13,0.95);
+      backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border-bottom:1px solid rgba(255,255,255,0.06);
+      font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;
+      letter-spacing:0.5px;text-transform:uppercase;
+    }
+    .style-tab{
+      flex:1;padding:14px 4px 12px;text-align:center;
+      cursor:pointer;color:rgba(255,255,255,0.35);
+      transition:all 0.3s;border-bottom:2px solid transparent;
+      user-select:none;-webkit-tap-highlight-color:transparent;
+    }
+    .style-tab:active{opacity:0.7}
+    .style-tab.active{color:#fff;border-bottom-color:currentColor}
+
+    /* Per-theme tab override */
+    .theme-editorial .style-tabs{
+      background:rgba(252,249,242,0.97);
+      border-bottom-color:rgba(0,0,0,0.08);
+    }
+    .theme-editorial .style-tab{color:rgba(0,0,0,0.25)}
+    .theme-editorial .style-tab.active{color:#1a1a1a;border-bottom-color:#c0392b}
+
+    .theme-neon .style-tabs{
+      background:rgba(5,5,15,0.97);
+      border-bottom-color:rgba(0,255,255,0.08);
+    }
+    .theme-neon .style-tab{color:rgba(255,255,255,0.2)}
+    .theme-neon .style-tab.active{color:#00ffd5;border-bottom-color:#00ffd5}
+
+    /* Page area below tabs */
+    .theme-view{display:none;padding-top:44px}
+    .theme-view.active{display:block}
+
+    /* ═══════════════════════════════════════
+       THEME 1: FITBIT CLASSIC
+    ═══════════════════════════════════════ */
+    :root{
+      --f-bg:#0a0f0d;--f-bg2:#111916;--f-card:#162019;--f-card-h:#1a2a21;
+      --f-mint:#5ce0b8;--f-mint-d:rgba(92,224,184,0.15);
+      --f-lav:#c4a8ff;--f-lav-d:rgba(196,168,255,0.15);
+      --f-coral:#ff7f6b;--f-coral-d:rgba(255,127,107,0.15);
+      --f-gold:#ffd666;--f-gold-d:rgba(255,214,102,0.15);
+      --f-blue:#6bc5ff;--f-blue-d:rgba(107,197,255,0.15);
+      --f-t1:#e8efe9;--f-t2:#8a9b90;--f-t3:#5a6b60;
+      --f-ring-track:rgba(255,255,255,0.06);
+    }
+    .theme-fitbit{
+      font-family:'DM Sans',sans-serif;background:var(--f-bg);color:var(--f-t1);
+    }
+    .f-header{
+      display:flex;align-items:center;justify-content:center;
+      padding:14px 16px;position:relative;
+    }
+    .f-header-back{
+      position:absolute;left:16px;background:none;border:none;color:var(--f-t2);
+      font-size:20px;cursor:pointer;padding:8px;border-radius:50%;display:none;
+    }
+    .f-header-back.vis{display:flex}
+    .f-header-title{font-family:'Outfit',sans-serif;font-size:17px;font-weight:600;letter-spacing:-0.3px}
+
+    .f-content{padding:8px 16px 80px}
+    .f-section{font-family:'Outfit',sans-serif;font-size:15px;font-weight:600;color:var(--f-t2);padding:20px 4px 10px;letter-spacing:0.3px}
+
+    /* Overview ring */
+    .f-hero{display:flex;flex-direction:column;align-items:center;padding:28px 0 20px}
+    .f-ring-wrap{position:relative;width:200px;height:200px}
+    .f-ring-wrap svg{width:100%;height:100%;transform:rotate(-90deg)}
+    .f-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+    .f-ring-center .ri{font-size:18px;opacity:0.7}
+    .f-ring-center .rl{font-size:11px;color:var(--f-t2);text-transform:uppercase;letter-spacing:0.8px}
+    .f-ring-center .rv{font-family:'Outfit',sans-serif;font-size:28px;font-weight:700;letter-spacing:-1px}
+    .f-ring-center .rs{font-size:12px;color:var(--f-t2)}
+
+    .f-quick{display:flex;justify-content:center;gap:28px;padding:16px 0 8px}
+    .f-qs{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
+    .f-qs-ic{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;transition:transform 0.2s}
+    .f-qs:active .f-qs-ic{transform:scale(0.92)}
+    .f-qs-v{font-family:'Outfit',sans-serif;font-size:14px;font-weight:600}
+    .f-qs-l{font-size:11px;color:var(--f-t2)}
+
+    /* Cards */
+    .f-card{
+      background:var(--f-card);border-radius:16px;padding:18px;margin-bottom:10px;
+      display:flex;align-items:center;justify-content:space-between;
+      cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;
+    }
+    .f-card::before{content:'';position:absolute;inset:0;border-radius:16px;border:1px solid rgba(255,255,255,0.03);pointer-events:none}
+    .f-card:active{transform:scale(0.985);background:var(--f-card-h)}
+    .f-card-l{display:flex;flex-direction:column;gap:4px;flex:1}
+    .f-card-t{font-size:13px;font-weight:500;color:var(--f-t2)}
+    .f-card-v{font-family:'Outfit',sans-serif;font-size:32px;font-weight:700;letter-spacing:-1.5px;line-height:1.1}
+    .f-card-v .u{font-size:16px;font-weight:400;color:var(--f-t2);letter-spacing:0;margin-left:2px}
+    .f-card-s{font-size:12px;color:var(--f-t3)}
+
+    .f-ring-sm{width:52px;height:52px;flex-shrink:0}
+    .f-ring-sm svg{width:100%;height:100%;transform:rotate(-90deg)}
+
+    .f-banner{background:var(--f-card);border-radius:16px;padding:14px 18px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px}
+    .f-banner-ic{font-size:18px;flex-shrink:0;margin-top:1px}
+    .f-banner-tx{font-size:13px;color:var(--f-t2);line-height:1.5}
+
+    .f-weekly{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+    .f-bars{display:flex;gap:5px;align-items:flex-end;height:28px}
+    .f-bar{width:8px;height:28px;border-radius:3px}
+    .f-days{display:flex;gap:5px}
+    .f-day{width:8px;text-align:center;font-size:8px;color:var(--f-t3);font-weight:500}
+    .f-day.now{color:var(--f-mint)}
+
+    .f-hourly{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+    .f-hrow{display:flex;gap:3px;align-items:flex-end;height:32px}
+    .f-hbar{width:6px;height:32px;border-radius:2px;background:rgba(255,255,255,0.06)}
+
+    /* Detail pages */
+    .f-detail{display:none}
+    .f-detail.act{display:block}
+    .f-main.hid{display:none}
+
+    .f-dhero{display:flex;flex-direction:column;align-items:center;padding:32px 0 24px}
+    .f-dring{position:relative;width:160px;height:160px;margin-bottom:16px}
+    .f-dring svg{width:100%;height:100%;transform:rotate(-90deg)}
+    .f-dring-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .f-dv{font-family:'Outfit',sans-serif;font-size:44px;font-weight:700;letter-spacing:-2px;line-height:1}
+    .f-du{font-size:16px;color:var(--f-t2);margin-top:2px}
+    .f-dsub{font-size:13px;color:var(--f-t2);text-align:center}
+
+    .f-dgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 0 16px}
+    .f-dstat{background:var(--f-card);border-radius:14px;padding:16px;position:relative;overflow:hidden}
+    .f-dstat::before{content:'';position:absolute;inset:0;border-radius:14px;border:1px solid rgba(255,255,255,0.03);pointer-events:none}
+    .f-dstat.full{grid-column:1/-1}
+    .f-dl{font-size:11px;color:var(--f-t3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+    .f-ddv{font-family:'Outfit',sans-serif;font-size:24px;font-weight:700;letter-spacing:-1px}
+    .f-dds{font-size:11px;color:var(--f-t3);margin-top:2px}
+
+    .f-graph{background:var(--f-card);border-radius:16px;padding:18px;margin-bottom:10px;position:relative;overflow:hidden}
+    .f-graph::before{content:'';position:absolute;inset:0;border-radius:16px;border:1px solid rgba(255,255,255,0.03);pointer-events:none}
+    .f-graph-t{font-size:13px;font-weight:500;color:var(--f-t2);margin-bottom:16px}
+    .f-mchart{height:80px;display:flex;align-items:flex-end;gap:3px}
+    .f-mbar{flex:1;border-radius:3px 3px 0 0;min-height:4px;transition:height 0.6s cubic-bezier(0.34,1.56,0.64,1)}
+    .f-clabels{display:flex;justify-content:space-between;margin-top:8px}
+    .f-clabel{font-size:9px;color:var(--f-t3)}
+
+    .f-stages{display:flex;flex-direction:column;gap:2px;margin-top:12px}
+    .f-stage{display:flex;align-items:center;gap:10px;padding:8px 0}
+    .f-stage-c{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+    .f-stage-n{font-size:13px;color:var(--f-t2);flex:1}
+    .f-stage-v{font-family:'Outfit',sans-serif;font-size:14px;font-weight:600}
+
+    .f-range{height:4px;background:var(--f-ring-track);border-radius:2px;position:relative;margin:12px 0 4px}
+    .f-range-f{position:absolute;height:100%;border-radius:2px}
+    .f-range-m{position:absolute;top:-3px;width:10px;height:10px;border-radius:50%;border:2px solid var(--f-card);transform:translateX(-50%)}
+    .f-range-l{display:flex;justify-content:space-between;margin-top:4px}
+    .f-range-lb{font-size:9px;color:var(--f-t3)}
+
+    .f-hmr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--f-card);margin-bottom:2px;cursor:pointer;transition:background 0.2s}
+    .f-hmr:first-child{border-radius:16px 16px 0 0}
+    .f-hmr:last-child{border-radius:0 0 16px 16px;margin-bottom:10px}
+    .f-hmr:active{background:var(--f-card-h)}
+    .f-hml{display:flex;align-items:center;gap:12px}
+    .f-hmd{width:8px;height:8px;border-radius:50%}
+    .f-hmn{font-size:14px}
+    .f-hmv{font-family:'Outfit',sans-serif;font-size:15px;font-weight:600;color:var(--f-t2)}
+    .f-hma{color:var(--f-t3);font-size:12px;margin-left:8px}
+
+    .f-hr-chart{height:80px;position:relative}
+    .f-hr-chart svg{width:100%;height:100%}
+
+    .f-wbar{height:6px;background:var(--f-ring-track);border-radius:3px;margin-top:8px;overflow:hidden}
+    .f-wfill{height:100%;border-radius:3px}
+
+    .f-nav{
+      position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+      width:100%;max-width:430px;display:flex;justify-content:space-around;align-items:center;
+      padding:10px 0 calc(10px + env(safe-area-inset-bottom,0px));
+      background:rgba(10,15,13,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border-top:1px solid rgba(255,255,255,0.04);z-index:100;
+    }
+    .f-nav-i{
+      display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;
+      background:none;border:none;color:var(--f-t3);font-size:11px;font-weight:500;
+      cursor:pointer;padding:4px 16px;transition:color 0.2s;
+    }
+    .f-nav-i.on{color:var(--f-mint)}
+    .f-nav-ic{font-size:20px}
+
+    /* Colors */
+    .tc-m{color:var(--f-mint)}.tc-l{color:var(--f-lav)}.tc-c{color:var(--f-coral)}.tc-g{color:var(--f-gold)}.tc-b{color:var(--f-blue)}
+    .bg-md{background:var(--f-mint-d)}.bg-ld{background:var(--f-lav-d)}.bg-cd{background:var(--f-coral-d)}.bg-gd{background:var(--f-gold-d)}.bg-bd{background:var(--f-blue-d)}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes ringFill{from{stroke-dashoffset:var(--circ)}to{stroke-dashoffset:var(--target)}}
+    .ring-a{animation:ringFill 1s cubic-bezier(0.4,0,0.2,1) forwards}
+    .fade-up{animation:fadeUp 0.4s ease}
+    .f-enter{animation:slideIn 0.3s ease forwards}
+    @keyframes slideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+
+    /* ═══════════════════════════════════════
+       THEME 2: EDITORIAL / MAGAZINE
+    ═══════════════════════════════════════ */
+    .theme-editorial{
+      font-family:'Source Serif 4',Georgia,serif;
+      background:#fcf9f2;color:#1a1a1a;
+    }
+    .theme-editorial .e-content{padding:12px 20px 40px}
+
+    .e-date{
+      font-family:'DM Sans',sans-serif;font-size:10px;font-weight:600;
+      text-transform:uppercase;letter-spacing:2px;color:#999;
+      padding:16px 0 4px;border-bottom:2px solid #1a1a1a;margin-bottom:20px;
+    }
+    .e-date span{color:#c0392b;margin-left:8px}
+
+    .e-headline{
+      font-family:'Playfair Display',serif;font-size:32px;font-weight:900;
+      line-height:1.08;letter-spacing:-0.5px;margin-bottom:4px;
+      color:#0d0d0d;
+    }
+    .e-subhead{
+      font-family:'DM Sans',sans-serif;font-size:12px;font-weight:400;
+      color:#888;margin-bottom:24px;letter-spacing:0.3px;
+    }
+
+    /* Editorial hero: big number with context */
+    .e-hero-grid{
+      display:grid;grid-template-columns:1fr 1fr;gap:0;
+      border-top:1px solid #ddd;border-bottom:1px solid #ddd;
+      margin-bottom:24px;
+    }
+    .e-hero-cell{
+      padding:20px 16px;
+      border-right:1px solid #eee;
+    }
+    .e-hero-cell:nth-child(2n){border-right:none}
+    .e-hero-cell:nth-child(n+3){border-top:1px solid #eee}
+    .e-hero-num{
+      font-family:'Playfair Display',serif;font-size:36px;font-weight:800;
+      line-height:1;letter-spacing:-2px;word-break:break-all;
+    }
+    .e-hero-num .e-unit{
+      font-size:16px;font-weight:400;color:#999;letter-spacing:0;margin-left:2px;
+      font-family:'Source Serif 4',serif;
+    }
+    .e-hero-label{
+      font-family:'DM Sans',sans-serif;font-size:10px;font-weight:600;
+      text-transform:uppercase;letter-spacing:1.5px;color:#aaa;margin-bottom:6px;
+    }
+    .e-hero-note{font-size:12px;color:#999;margin-top:4px;font-style:italic}
+
+    /* Section divider */
+    .e-divider{
+      display:flex;align-items:center;gap:12px;margin:28px 0 16px;
+    }
+    .e-divider-line{flex:1;height:1px;background:#ddd}
+    .e-divider-text{
+      font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;
+      text-transform:uppercase;letter-spacing:2.5px;color:#c0392b;
+    }
+
+    /* Data rows - newspaper style */
+    .e-row{
+      display:flex;justify-content:space-between;align-items:baseline;
+      padding:12px 0;border-bottom:1px solid #f0ece3;
+      cursor:pointer;transition:background 0.15s;
+    }
+    .e-row:hover{background:rgba(192,57,43,0.03)}
+    .e-row:active{background:rgba(192,57,43,0.06)}
+    .e-row-name{font-size:15px;font-weight:400;color:#333}
+    .e-row-val{
+      font-family:'Playfair Display',serif;font-size:20px;font-weight:700;
+      letter-spacing:-0.5px;text-align:right;
+    }
+    .e-row-unit{font-size:12px;font-weight:400;color:#999;margin-left:3px;font-family:'Source Serif 4',serif}
+    .e-row-sub{font-size:11px;color:#bbb;margin-top:1px;font-style:italic;text-align:right}
+
+    /* Red accent for featured */
+    .e-accent{color:#c0392b}
+    .e-accent-bg{background:#c0392b;color:#fff}
+
+    /* Pull quote style for insights */
+    .e-quote{
+      border-left:3px solid #c0392b;padding:16px 20px;margin:20px 0;
+      font-size:14px;font-style:italic;color:#555;line-height:1.6;
+      background:rgba(192,57,43,0.02);
+    }
+    .e-quote strong{color:#1a1a1a;font-style:normal}
+
+    /* Editorial bar chart */
+    .e-chart-wrap{margin:20px 0}
+    .e-chart-title{
+      font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;
+      text-transform:uppercase;letter-spacing:2px;color:#999;margin-bottom:12px;
+    }
+    .e-chart{display:flex;align-items:flex-end;gap:6px;height:60px}
+    .e-chart-bar{
+      flex:1;border-radius:2px 2px 0 0;min-height:3px;
+      background:#1a1a1a;transition:height 0.6s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .e-chart-bar.today{background:#c0392b}
+    .e-chart-labels{display:flex;justify-content:space-between;margin-top:6px}
+    .e-chart-label{font-family:'DM Sans',sans-serif;font-size:8px;color:#bbb;text-transform:uppercase;letter-spacing:1px}
+
+    /* 3-col compact stats */
+    .e-stat3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border:1px solid #eee;margin:16px 0}
+    .e-stat3-cell{padding:14px 12px;border-right:1px solid #eee;text-align:center}
+    .e-stat3-cell:last-child{border-right:none}
+    .e-stat3-num{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;letter-spacing:-1px}
+    .e-stat3-label{font-family:'DM Sans',sans-serif;font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:#aaa;margin-top:4px}
+
+    /* Health metrics tags */
+    .e-tags{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+    .e-tag{
+      font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;
+      padding:6px 14px;border:1px solid #ddd;border-radius:20px;
+      color:#555;cursor:pointer;transition:all 0.2s;
+    }
+    .e-tag:hover{border-color:#c0392b;color:#c0392b}
+    .e-tag.in-range{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+
+    /* Footer line */
+    .e-footer{
+      font-family:'DM Sans',sans-serif;font-size:9px;font-weight:400;
+      text-transform:uppercase;letter-spacing:2px;color:#ccc;
+      text-align:center;padding:32px 0 16px;
+    }
+
+    /* Detail pages editorial */
+    .e-detail{display:none}
+    .e-detail.act{display:block}
+    .e-main.hid{display:none}
+    .e-back{
+      font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;
+      text-transform:uppercase;letter-spacing:1.5px;color:#c0392b;
+      cursor:pointer;padding:16px 0 8px;display:none;
+    }
+    .e-back.vis{display:block}
+    .e-back:hover{text-decoration:underline}
+
+    .e-detail-hero{text-align:center;padding:24px 0 20px;border-bottom:2px solid #1a1a1a;margin-bottom:20px}
+    .e-detail-num{font-family:'Playfair Display',serif;font-size:64px;font-weight:900;letter-spacing:-3px;line-height:1}
+    .e-detail-unit{font-size:18px;color:#999;font-weight:400;font-family:'Source Serif 4',serif}
+    .e-detail-sub{font-size:13px;color:#999;margin-top:6px;font-style:italic}
+
+    /* ═══════════════════════════════════════
+       THEME 3: NEON PULSE / RETRO-FUTURISTIC
+    ═══════════════════════════════════════ */
+    .theme-neon{
+      font-family:'JetBrains Mono',monospace;
+      background:#05050f;color:#d0d0d0;
+      position:relative;
+    }
+    /* Scanline overlay */
+    .theme-neon::after{
+      content:'';position:fixed;inset:0;pointer-events:none;z-index:50;
+      background:repeating-linear-gradient(
+        0deg,transparent,transparent 2px,rgba(0,0,0,0.12) 2px,rgba(0,0,0,0.12) 4px
+      );
+    }
+    /* Ambient glow at top */
+    .theme-neon::before{
+      content:'';position:fixed;top:0;left:0;right:0;height:200px;pointer-events:none;z-index:49;
+      background:radial-gradient(ellipse at 50% 0%,rgba(0,255,213,0.06) 0%,transparent 70%);
+    }
+
+    .n-content{padding:12px 16px 40px;overflow-x:hidden}
+
+    .n-header{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:12px 0 8px;border-bottom:1px solid rgba(0,255,213,0.15);
+      margin-bottom:16px;
+    }
+    .n-header-title{
+      font-size:10px;font-weight:700;text-transform:uppercase;
+      letter-spacing:3px;color:#00ffd5;
+    }
+    .n-header-time{font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:1px}
+
+    /* Neon glow text */
+    .n-glow{
+      text-shadow:0 0 6px currentColor,0 0 15px currentColor,0 0 30px currentColor;
+    }
+    .n-cyan{color:#00ffd5}
+    .n-mag{color:#ff00e5}
+    .n-amber{color:#ffaa00}
+    .n-red{color:#ff3366}
+    .n-white{color:#ffffff}
+
+    /* HUD stat blocks */
+    .n-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;overflow:hidden}
+    .n-stat{
+      background:rgba(0,255,213,0.03);border:1px solid rgba(0,255,213,0.1);
+      padding:12px 10px;position:relative;overflow:hidden;min-width:0;
+      cursor:pointer;transition:all 0.2s;
+      /* Corner brackets */
+      background-image:
+        linear-gradient(rgba(0,255,213,0.25),rgba(0,255,213,0.25)),
+        linear-gradient(rgba(0,255,213,0.25),rgba(0,255,213,0.25)),
+        linear-gradient(rgba(0,255,213,0.25),rgba(0,255,213,0.25)),
+        linear-gradient(rgba(0,255,213,0.25),rgba(0,255,213,0.25));
+      background-size:8px 1px,1px 8px,8px 1px,1px 8px;
+      background-position:top left,top left,bottom right,bottom right;
+      background-repeat:no-repeat;
+    }
+    .n-stat::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(0,255,213,0.3),transparent);
+    }
+    .n-stat:active{background:rgba(0,255,213,0.06);transform:scale(0.98)}
+    .n-stat.full{grid-column:1/-1}
+    .n-stat-label{
+      font-size:8px;font-weight:600;text-transform:uppercase;
+      letter-spacing:2px;color:rgba(255,255,255,0.3);margin-bottom:8px;
+    }
+    .n-stat-val{font-size:28px;font-weight:700;letter-spacing:-1px;line-height:1;text-shadow:0 0 4px currentColor}
+    .n-stat-unit{font-size:11px;font-weight:400;color:rgba(255,255,255,0.3);margin-left:4px}
+    .n-stat-sub{font-size:9px;color:rgba(255,255,255,0.2);margin-top:4px;letter-spacing:0.5px}
+
+    /* Neon section label */
+    .n-section{
+      font-size:8px;font-weight:700;text-transform:uppercase;
+      letter-spacing:3px;color:#00ffd5;
+      padding:20px 0 8px;
+      border-bottom:1px solid rgba(0,255,213,0.1);margin-bottom:12px;
+      display:flex;align-items:center;gap:8px;
+    }
+    .n-section::before{
+      content:'▸';font-size:10px;
+    }
+
+    /* Gauge bar */
+    .n-gauge{
+      height:4px;background:rgba(255,255,255,0.05);margin:10px 0 4px;
+      position:relative;overflow:hidden;border-radius:2px;
+    }
+    .n-gauge-fill{
+      height:100%;position:absolute;left:0;top:0;border-radius:2px;
+      transition:width 0.8s cubic-bezier(0.4,0,0.2,1);
+      box-shadow:0 0 8px currentColor;
+    }
+    .n-gauge-labels{display:flex;justify-content:space-between}
+    .n-gauge-lb{font-size:8px;color:rgba(255,255,255,0.15);letter-spacing:1px}
+
+    /* Neon bar chart */
+    .n-chart{display:flex;align-items:flex-end;gap:4px;height:50px;margin:12px 0 6px}
+    .n-chart-bar{
+      flex:1;min-height:2px;
+      transition:height 0.6s cubic-bezier(0.34,1.56,0.64,1);
+      position:relative;
+    }
+    .n-chart-bar::after{
+      content:'';position:absolute;inset:0;
+      box-shadow:0 0 6px currentColor;opacity:0.3;
+    }
+    .n-chart-labels{display:flex;justify-content:space-between}
+    .n-chart-lb{font-size:7px;color:rgba(255,255,255,0.15);letter-spacing:1px;text-transform:uppercase}
+
+    /* Neon data row */
+    .n-row{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03);
+      cursor:pointer;transition:background 0.15s;
+    }
+    .n-row:active{background:rgba(0,255,213,0.04)}
+    .n-row-name{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.4)}
+    .n-row-val{font-size:14px;font-weight:700;letter-spacing:-0.5px;text-shadow:0 0 6px currentColor}
+    .n-row-arrow{font-size:10px;color:rgba(0,255,213,0.3);margin-left:8px}
+
+    /* Neon HR waveform */
+    .n-wave{height:60px;position:relative;margin:12px 0}
+    .n-wave svg{width:100%;height:100%}
+
+    /* Neon ring gauge */
+    .n-ring-wrap{position:relative;width:100px;height:100px;margin:0 auto 10px}
+    .n-ring-wrap svg{width:100%;height:100%;transform:rotate(-90deg)}
+    .n-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .n-ring-val{font-size:26px;font-weight:700;letter-spacing:-1px;line-height:1}
+    .n-ring-lb{font-size:8px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:2px;margin-top:4px}
+
+    /* Neon sleep stages */
+    .n-sleep-bar{display:flex;height:16px;margin:12px 0;gap:1px}
+    .n-sleep-bar>div{border-radius:1px}
+    .n-sleep-labels{display:flex;justify-content:space-between}
+    .n-sleep-lb{font-size:8px;color:rgba(255,255,255,0.15);letter-spacing:1px}
+
+    /* Neon detail */
+    .n-detail{display:none}
+    .n-detail.act{display:block}
+    .n-main.hid{display:none}
+    .n-back{
+      font-size:9px;font-weight:600;text-transform:uppercase;
+      letter-spacing:2px;color:#00ffd5;cursor:pointer;
+      padding:12px 0 8px;display:none;
+    }
+    .n-back.vis{display:block}
+
+    .n-detail-hero{text-align:center;padding:20px 0;border-bottom:1px solid rgba(0,255,213,0.1);margin-bottom:16px}
+    .n-detail-num{font-size:52px;font-weight:700;letter-spacing:-2px;line-height:1}
+    .n-detail-sub{font-size:10px;color:rgba(255,255,255,0.3);margin-top:6px;letter-spacing:1px}
+
+    /* Flicker animation for neon */
+    @keyframes neonPulse{
+      0%,100%{opacity:1}
+      50%{opacity:0.95}
+      75%{opacity:0.98}
+    }
+    .n-pulse{animation:neonPulse 3s infinite}
+
+    /* Fade in for neon */
+    @keyframes neonFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .n-fade{animation:neonFade 0.4s ease}
+    .n-d1{animation-delay:0.05s;opacity:0;animation-fill-mode:forwards}
+    .n-d2{animation-delay:0.1s;opacity:0;animation-fill-mode:forwards}
+    .n-d3{animation-delay:0.15s;opacity:0;animation-fill-mode:forwards}
+    .n-d4{animation-delay:0.2s;opacity:0;animation-fill-mode:forwards}
+    .n-d5{animation-delay:0.25s;opacity:0;animation-fill-mode:forwards}
+    .n-d6{animation-delay:0.3s;opacity:0;animation-fill-mode:forwards}
+    .n-d7{animation-delay:0.35s;opacity:0;animation-fill-mode:forwards}
+    .n-d8{animation-delay:0.4s;opacity:0;animation-fill-mode:forwards}
+    .n-d9{animation-delay:0.45s;opacity:0;animation-fill-mode:forwards}
+    .n-d10{animation-delay:0.5s;opacity:0;animation-fill-mode:forwards}
+
+    /* ═══════════════════════════════════════
+       GLOBAL TRANSITION
+    ═══════════════════════════════════════ */
+    .app{transition:background 0.4s,color 0.4s}
+  </style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ═══ STYLE TABS ═══ -->
+  <div class="style-tabs" id="styleTabs">
+    <div class="style-tab active" onclick="switchTheme('fitbit')">Fitbit</div>
+    <div class="style-tab" onclick="switchTheme('editorial')">Editorial</div>
+    <div class="style-tab" onclick="switchTheme('neon')">Neon Pulse</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       THEME 1: FITBIT CLASSIC
+  ═══════════════════════════════════════ -->
+  <div class="theme-view theme-fitbit active" id="view-fitbit">
+    <div class="f-header">
+      <button class="f-header-back" id="fBack" onclick="fGoBack()">‹</button>
+      <span class="f-header-title" id="fTitle">Today</span>
+    </div>
+
+    <div class="f-main" id="fMain">
+      <div class="f-content fade-up">
+        <!-- Hero ring -->
+        <div class="f-hero">
+          <div class="f-ring-wrap">
+            <svg viewBox="0 0 200 200">
+              <circle cx="100" cy="100" r="88" fill="none" stroke="var(--f-ring-track)" stroke-width="10"/>
+              <circle cx="100" cy="100" r="88" fill="none" stroke="var(--f-mint)" stroke-width="10" stroke-linecap="round" stroke-dasharray="553" stroke-dashoffset="553" class="ring-a" style="--circ:553;--target:553"/>
+              <circle cx="100" cy="100" r="74" fill="none" stroke="var(--f-ring-track)" stroke-width="10"/>
+              <circle cx="100" cy="100" r="74" fill="none" stroke="var(--f-lav)" stroke-width="10" stroke-linecap="round" stroke-dasharray="465" stroke-dashoffset="465" class="ring-a" style="--circ:465;--target:209"/>
+            </svg>
+            <div class="f-ring-center">
+              <div class="ri">💚</div>
+              <div class="rl">Cardio Load</div>
+              <div class="rv">0 <span style="font-size:14px;color:var(--f-t2);font-weight:400">· Target 1-16</span></div>
+              <div class="rs"><span style="color:var(--f-lav)">✦</span> Daily Readiness · 55 · Moderate</div>
+            </div>
+          </div>
+        </div>
+        <div class="f-quick">
+          <div class="f-qs" onclick="fOpen('exercise')"><div class="f-qs-ic bg-md"><span class="tc-m">🏋️</span></div><div class="f-qs-v">0 <span style="font-size:11px;color:var(--f-t2)">of 5</span></div><div class="f-qs-l">Exercise</div></div>
+          <div class="f-qs" onclick="fOpen('sleep')"><div class="f-qs-ic bg-ld"><span class="tc-l">🌙</span></div><div class="f-qs-v">6h 29m</div><div class="f-qs-l">Sleep</div></div>
+          <div class="f-qs" onclick="fOpen('steps')"><div class="f-qs-ic bg-md"><span class="tc-m">👟</span></div><div class="f-qs-v">541</div><div class="f-qs-l">Steps</div></div>
+        </div>
+        <div class="f-banner" style="margin-top:16px"><div class="f-banner-ic">✦</div><div class="f-banner-tx"><strong style="color:var(--f-t1)">Recovery requires rest days</strong><br>You've been working hard, but overtraining can increase strain. Give your body a break.</div></div>
+
+        <div class="f-section">Activity</div>
+        <div class="f-card" onclick="fOpen('cardio')"><div class="f-card-l"><div class="f-card-t">Cardio load</div><div class="f-card-v tc-m">0</div><div class="f-card-s">Today · Target 1-16</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/></svg></div></div>
+        <div class="f-card" onclick="fOpen('exercise')"><div class="f-card-l"><div class="f-card-t">Exercise days</div><div class="f-card-v">0 <span class="u">of 5</span></div><div class="f-card-s">This week</div></div><div class="f-weekly"><div class="f-bars"><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div></div><div class="f-days"><div class="f-day now">S</div><div class="f-day">M</div><div class="f-day">T</div><div class="f-day">W</div><div class="f-day">T</div><div class="f-day">F</div><div class="f-day">S</div></div></div></div>
+        <div class="f-card" onclick="fOpen('azm')"><div class="f-card-l"><div class="f-card-t">Active Zone Min</div><div class="f-card-v tc-m">0</div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/></svg></div></div>
+        <div class="f-card" onclick="fOpen('steps')"><div class="f-card-l"><div class="f-card-t">Steps</div><div class="f-card-v tc-m">541</div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-mint)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:124"/></svg></div></div>
+        <div class="f-card" onclick="fOpen('hourly')"><div class="f-card-l"><div class="f-card-t">Hourly activity</div><div class="f-card-v">0 <span class="u">of 9</span></div><div class="f-card-s">Today</div></div><div class="f-hourly"><div class="f-hrow"><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div><div class="f-hbar"></div></div><div style="display:flex;justify-content:space-between;width:100%"><span style="font-size:9px;color:var(--f-t3)">9am</span><span style="font-size:9px;color:var(--f-t3)">5pm</span></div></div></div>
+        <div class="f-card" onclick="fOpen('distance')"><div class="f-card-l"><div class="f-card-t">Distance</div><div class="f-card-v tc-m">0.38 <span class="u">km</span></div><div class="f-card-s">Today</div></div><div style="font-size:28px;opacity:0.4">📍</div></div>
+        <div class="f-card" onclick="fOpen('calories')"><div class="f-card-l"><div class="f-card-t">Energy burned</div><div class="f-card-v tc-c">706 <span class="u">cal</span></div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-coral)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:69"/></svg></div></div>
+        <div class="f-card" onclick="fOpen('floors')"><div class="f-card-l"><div class="f-card-t">Floors</div><div class="f-card-v tc-m">0</div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/></svg></div></div>
+
+        <div class="f-section">Recovery</div>
+        <div class="f-card" onclick="fOpen('sleep')"><div class="f-card-l"><div class="f-card-t">Sleep duration</div><div class="f-card-v tc-l">6<span class="u">h</span> 29<span class="u">m</span></div><div class="f-card-s">Today · Sleep Score: 81</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-lav)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:24"/></svg></div></div>
+        <div class="f-card"><div class="f-card-l" style="flex-direction:row;align-items:center;gap:12px"><span style="font-size:24px">🌙</span><div><div class="f-card-t">Your sleep profile</div><div style="font-size:16px;font-weight:600;margin-top:2px">The Hedgehog</div></div></div></div>
+        <div class="f-card" onclick="fOpen('readiness')"><div class="f-card-l"><div class="f-card-t">Daily readiness</div><div class="f-card-v tc-l">55</div><div class="f-card-s">Today · Moderate</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-lav)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:62"/></svg></div></div>
+
+        <div class="f-section">Stress & mindfulness</div>
+        <div class="f-card" onclick="fOpen('mindful')"><div class="f-card-l"><div class="f-card-t">Mindful days</div><div class="f-card-v">0 <span class="u">of 5</span></div><div class="f-card-s">This week</div></div><div class="f-weekly"><div class="f-bars"><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div></div><div class="f-days"><div class="f-day now">S</div><div class="f-day">M</div><div class="f-day">T</div><div class="f-day">W</div><div class="f-day">T</div><div class="f-day">F</div><div class="f-day">S</div></div></div></div>
+        <div class="f-card" onclick="fOpen('stress')"><div class="f-card-l"><div class="f-card-t">Stress management score</div><div class="f-card-v tc-l">88</div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-lav)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:17"/></svg></div></div>
+
+        <div class="f-section">Health</div>
+        <div class="f-card" onclick="fOpen('healthMetrics')"><div class="f-card-l"><div class="f-card-t">Health metrics</div><div class="f-card-v tc-b">5 <span class="u">of 5</span></div><div class="f-card-s">In personal range</div></div><div style="display:flex;gap:2px;align-items:flex-end"><div style="width:6px;height:16px;background:var(--f-blue);border-radius:2px"></div><div style="width:6px;height:22px;background:var(--f-blue);border-radius:2px"></div><div style="width:6px;height:18px;background:var(--f-blue);border-radius:2px"></div><div style="width:6px;height:26px;background:var(--f-blue);border-radius:2px"></div><div style="width:6px;height:20px;background:var(--f-blue);border-radius:2px"></div></div></div>
+        <div class="f-card" onclick="fOpen('heartrate')"><div class="f-card-l"><div class="f-card-t">Heart rate</div><div class="f-card-v tc-c">81 <span class="u">bpm</span></div><div class="f-card-s">78 resting</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-coral)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:42"/></svg></div></div>
+        <div class="f-card" onclick="fOpen('weight')"><div class="f-card-l"><div class="f-card-t">Weight</div><div class="f-card-v">76 <span class="u">kg</span></div><div class="f-card-s">4 kg left to goal</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><span style="font-size:12px;color:var(--f-mint)">↓ 72 kg goal</span></div></div>
+      </div>
+    </div>
+
+    <!-- Fitbit detail pages container -->
+    <div id="fDetails"></div>
+
+    <div class="f-nav">
+      <button class="f-nav-i on"><span class="f-nav-ic">🌤️</span>Today</button>
+      <button class="f-nav-i"><span class="f-nav-ic">📋</span>Coach</button>
+      <button class="f-nav-i"><span class="f-nav-ic">⊞</span>You</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       THEME 2: EDITORIAL
+  ═══════════════════════════════════════ -->
+  <div class="theme-view theme-editorial" id="view-editorial">
+    <div class="e-main" id="eMain">
+      <div class="e-content">
+        <div class="e-back" id="eBack" onclick="eGoBack()">← Back to overview</div>
+        <div class="e-date">Sunday, February 22, 2026 <span>■</span> Health Report</div>
+        <div class="e-headline">Your Body<br>Today.</div>
+        <div class="e-subhead">A comprehensive view of vitals, recovery, and readiness.</div>
+
+        <!-- Hero Grid -->
+        <div class="e-hero-grid">
+          <div class="e-hero-cell" onclick="eOpen('steps')">
+            <div class="e-hero-label">Steps</div>
+            <div class="e-hero-num e-accent">541</div>
+            <div class="e-hero-note">of 5,500 goal</div>
+          </div>
+          <div class="e-hero-cell" onclick="eOpen('sleep')">
+            <div class="e-hero-label">Sleep</div>
+            <div class="e-hero-num">6<span class="e-unit">h</span>29<span class="e-unit">m</span></div>
+            <div class="e-hero-note">score 81 · good</div>
+          </div>
+          <div class="e-hero-cell" onclick="eOpen('heartrate')">
+            <div class="e-hero-label">Heart Rate</div>
+            <div class="e-hero-num">81<span class="e-unit"> bpm</span></div>
+            <div class="e-hero-note">resting 78</div>
+          </div>
+          <div class="e-hero-cell" onclick="eOpen('readiness')">
+            <div class="e-hero-label">Readiness</div>
+            <div class="e-hero-num">55</div>
+            <div class="e-hero-note">moderate</div>
+          </div>
+        </div>
+
+        <div class="e-quote">
+          <strong>Recovery requires rest days.</strong> You've been working hard, but overtraining can increase strain. Give your body a break so you can train to your potential.
+        </div>
+
+        <!-- Activity -->
+        <div class="e-divider"><div class="e-divider-line"></div><div class="e-divider-text">Activity</div><div class="e-divider-line"></div></div>
+
+        <div class="e-row" onclick="eOpen('cardio')"><div><div class="e-row-name">Cardio Load</div></div><div><div class="e-row-val">0<span class="e-row-unit"></span></div><div class="e-row-sub">target 1–16</div></div></div>
+        <div class="e-row" onclick="eOpen('exercise')"><div><div class="e-row-name">Exercise Days</div></div><div><div class="e-row-val">0<span class="e-row-unit"> of 5</span></div><div class="e-row-sub">this week</div></div></div>
+        <div class="e-row" onclick="eOpen('azm')"><div><div class="e-row-name">Active Zone Minutes</div></div><div><div class="e-row-val">0</div><div class="e-row-sub">today</div></div></div>
+        <div class="e-row" onclick="eOpen('steps')"><div><div class="e-row-name">Steps</div></div><div><div class="e-row-val e-accent">541</div><div class="e-row-sub">today</div></div></div>
+        <div class="e-row" onclick="eOpen('hourly')"><div><div class="e-row-name">Hourly Activity</div></div><div><div class="e-row-val">0<span class="e-row-unit"> of 9</span></div><div class="e-row-sub">today</div></div></div>
+        <div class="e-row" onclick="eOpen('distance')"><div><div class="e-row-name">Distance</div></div><div><div class="e-row-val">0.38<span class="e-row-unit"> km</span></div></div></div>
+        <div class="e-row" onclick="eOpen('calories')"><div><div class="e-row-name">Energy Burned</div></div><div><div class="e-row-val e-accent">706<span class="e-row-unit"> cal</span></div></div></div>
+        <div class="e-row" onclick="eOpen('floors')"><div><div class="e-row-name">Floors</div></div><div><div class="e-row-val">0</div></div></div>
+
+        <div class="e-chart-wrap">
+          <div class="e-chart-title">Steps — This Week</div>
+          <div class="e-chart" id="eStepsChart"></div>
+          <div class="e-chart-labels"><span class="e-chart-label">Sun</span><span class="e-chart-label">Mon</span><span class="e-chart-label">Tue</span><span class="e-chart-label">Wed</span><span class="e-chart-label">Thu</span><span class="e-chart-label">Fri</span><span class="e-chart-label">Sat</span></div>
+        </div>
+
+        <!-- Recovery -->
+        <div class="e-divider"><div class="e-divider-line"></div><div class="e-divider-text">Recovery</div><div class="e-divider-line"></div></div>
+
+        <div class="e-row" onclick="eOpen('sleep')"><div><div class="e-row-name">Sleep Duration</div></div><div><div class="e-row-val">6h 29m</div><div class="e-row-sub">score 81</div></div></div>
+        <div class="e-row"><div><div class="e-row-name">Sleep Profile</div></div><div><div class="e-row-val" style="font-size:16px">🦔 The Hedgehog</div></div></div>
+        <div class="e-row" onclick="eOpen('readiness')"><div><div class="e-row-name">Daily Readiness</div></div><div><div class="e-row-val">55</div><div class="e-row-sub">moderate</div></div></div>
+
+        <div class="e-stat3">
+          <div class="e-stat3-cell"><div class="e-stat3-num" style="color:#c0392b">81</div><div class="e-stat3-label">Sleep Score</div></div>
+          <div class="e-stat3-cell"><div class="e-stat3-num">55</div><div class="e-stat3-label">Readiness</div></div>
+          <div class="e-stat3-cell"><div class="e-stat3-num">88</div><div class="e-stat3-label">Stress</div></div>
+        </div>
+
+        <!-- Stress -->
+        <div class="e-divider"><div class="e-divider-line"></div><div class="e-divider-text">Stress & Mindfulness</div><div class="e-divider-line"></div></div>
+
+        <div class="e-row" onclick="eOpen('mindful')"><div><div class="e-row-name">Mindful Days</div></div><div><div class="e-row-val">0<span class="e-row-unit"> of 5</span></div><div class="e-row-sub">this week</div></div></div>
+        <div class="e-row" onclick="eOpen('stress')"><div><div class="e-row-name">Stress Management</div></div><div><div class="e-row-val e-accent">88</div><div class="e-row-sub">excellent</div></div></div>
+
+        <!-- Health -->
+        <div class="e-divider"><div class="e-divider-line"></div><div class="e-divider-text">Health Metrics</div><div class="e-divider-line"></div></div>
+
+        <div style="font-size:14px;color:#555;margin-bottom:12px;font-style:italic">5 of 5 metrics in your personal range.</div>
+        <div class="e-tags">
+          <div class="e-tag in-range" onclick="eOpen('healthBR')">BR 16 brpm ✓</div>
+          <div class="e-tag in-range" onclick="eOpen('healthSpO2')">SpO₂ 97% ✓</div>
+          <div class="e-tag in-range" onclick="eOpen('heartrate')">RHR 78 bpm ✓</div>
+          <div class="e-tag in-range" onclick="eOpen('healthHRV')">HRV 32 ms ✓</div>
+          <div class="e-tag in-range" onclick="eOpen('healthTemp')">Temp +0.2° ✓</div>
+        </div>
+
+        <div class="e-row" onclick="eOpen('heartrate')"><div><div class="e-row-name">Heart Rate</div></div><div><div class="e-row-val e-accent">81<span class="e-row-unit"> bpm</span></div><div class="e-row-sub">resting 78</div></div></div>
+        <div class="e-row" onclick="eOpen('weight')"><div><div class="e-row-name">Weight</div></div><div><div class="e-row-val">76<span class="e-row-unit"> kg</span></div><div class="e-row-sub">4 kg to goal</div></div></div>
+
+        <div class="e-footer">— End of Today's Report —</div>
+      </div>
+    </div>
+
+    <div id="eDetails"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       THEME 3: NEON PULSE
+  ═══════════════════════════════════════ -->
+  <div class="theme-view theme-neon" id="view-neon">
+    <div class="n-main" id="nMain">
+      <div class="n-content">
+        <div class="n-back" id="nBack" onclick="nGoBack()">‹ BACK</div>
+        <div class="n-header n-fade n-d1">
+          <div class="n-header-title n-glow n-pulse">VITALS // TODAY</div>
+          <div class="n-header-time" id="neonTime">09:13 IST</div>
+        </div>
+
+        <!-- Primary readouts — compact 4-col strip -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px" class="n-fade n-d2">
+          <div style="text-align:center;cursor:pointer;padding:10px 4px;background:rgba(0,255,213,0.03);border:1px solid rgba(0,255,213,0.08)" onclick="nOpen('readiness')">
+            <div style="font-size:7px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.25);margin-bottom:6px">Ready</div>
+            <div style="font-size:22px;font-weight:700;color:#00ffd5;text-shadow:0 0 6px #00ffd5,0 0 15px #00ffd5;line-height:1">55</div>
+            <div style="font-size:7px;color:rgba(255,255,255,0.15);margin-top:3px;letter-spacing:1px">MOD</div>
+          </div>
+          <div style="text-align:center;cursor:pointer;padding:10px 4px;background:rgba(255,0,229,0.03);border:1px solid rgba(255,0,229,0.08)" onclick="nOpen('stress')">
+            <div style="font-size:7px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.25);margin-bottom:6px">Stress</div>
+            <div style="font-size:22px;font-weight:700;color:#ff00e5;text-shadow:0 0 6px #ff00e5,0 0 15px #ff00e5;line-height:1">88</div>
+            <div style="font-size:7px;color:rgba(255,255,255,0.15);margin-top:3px;letter-spacing:1px">EXC</div>
+          </div>
+          <div style="text-align:center;cursor:pointer;padding:10px 4px;background:rgba(255,51,102,0.03);border:1px solid rgba(255,51,102,0.08)" onclick="nOpen('heartrate')">
+            <div style="font-size:7px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.25);margin-bottom:6px">HR</div>
+            <div style="font-size:22px;font-weight:700;color:#ff3366;text-shadow:0 0 6px #ff3366,0 0 15px #ff3366;line-height:1">81</div>
+            <div style="font-size:7px;color:rgba(255,255,255,0.15);margin-top:3px;letter-spacing:1px">BPM</div>
+          </div>
+          <div style="text-align:center;cursor:pointer;padding:10px 4px;background:rgba(255,0,229,0.03);border:1px solid rgba(255,0,229,0.08)" onclick="nOpen('sleep')">
+            <div style="font-size:7px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.25);margin-bottom:6px">Sleep</div>
+            <div style="font-size:22px;font-weight:700;color:#ff00e5;text-shadow:0 0 6px #ff00e5;line-height:1">6:29</div>
+            <div style="font-size:7px;color:rgba(255,255,255,0.15);margin-top:3px;letter-spacing:1px">81</div>
+          </div>
+        </div>
+
+        <!-- Cardio + quick stats inline -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;padding:10px 12px;background:rgba(0,255,213,0.02);border:1px solid rgba(0,255,213,0.06)" class="n-fade n-d3">
+          <div style="position:relative;width:56px;height:56px;flex-shrink:0">
+            <svg viewBox="0 0 56 56" style="width:100%;height:100%;transform:rotate(-90deg)">
+              <circle cx="28" cy="28" r="23" fill="none" stroke="rgba(0,255,213,0.1)" stroke-width="4"/>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+              <div style="font-size:18px;font-weight:700;color:#00ffd5;text-shadow:0 0 6px #00ffd5">0</div>
+            </div>
+          </div>
+          <div style="flex:1">
+            <div style="font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:rgba(0,255,213,0.4)">Cardio Load</div>
+            <div style="font-size:9px;color:rgba(255,255,255,0.15);margin-top:2px;letter-spacing:1px">TARGET 1-16 // NO ACTIVITY</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:1px">541 <span style="font-size:7px">STEPS</span></div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:1px;margin-top:2px">706 <span style="font-size:7px">CAL</span></div>
+          </div>
+        </div>
+
+        <!-- Activity section -->
+        <div class="n-section n-fade n-d7">Activity</div>
+        <div class="n-stat-grid">
+          <div class="n-stat" onclick="nOpen('steps')">
+            <div class="n-stat-label">Steps</div>
+            <div class="n-stat-val n-cyan">541</div>
+            <div class="n-gauge"><div class="n-gauge-fill" style="width:10%;background:#00ffd5"></div></div>
+            <div class="n-gauge-labels"><span class="n-gauge-lb">0</span><span class="n-gauge-lb">5500</span></div>
+          </div>
+          <div class="n-stat" onclick="nOpen('calories')">
+            <div class="n-stat-label">Energy</div>
+            <div class="n-stat-val n-red">706<span class="n-stat-unit">CAL</span></div>
+            <div class="n-gauge"><div class="n-gauge-fill" style="width:50%;background:#ff3366"></div></div>
+            <div class="n-gauge-labels"><span class="n-gauge-lb">0</span><span class="n-gauge-lb">1400</span></div>
+          </div>
+          <div class="n-stat" onclick="nOpen('distance')">
+            <div class="n-stat-label">Distance</div>
+            <div class="n-stat-val n-cyan">0.38<span class="n-stat-unit">KM</span></div>
+          </div>
+          <div class="n-stat" onclick="nOpen('azm')">
+            <div class="n-stat-label">Active Zone</div>
+            <div class="n-stat-val" style="color:rgba(255,255,255,0.2)">0<span class="n-stat-unit">MIN</span></div>
+          </div>
+          <div class="n-stat" onclick="nOpen('exercise')">
+            <div class="n-stat-label">Exercise Days</div>
+            <div class="n-stat-val" style="color:rgba(255,255,255,0.2)">0<span class="n-stat-unit">/ 5</span></div>
+          </div>
+          <div class="n-stat" onclick="nOpen('floors')">
+            <div class="n-stat-label">Floors</div>
+            <div class="n-stat-val" style="color:rgba(255,255,255,0.2)">0</div>
+          </div>
+        </div>
+
+        <!-- Steps chart -->
+        <div style="margin:8px 0 20px">
+          <div style="font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:rgba(0,255,213,0.4);margin-bottom:8px">STEPS // 7 DAY</div>
+          <div class="n-chart" id="nStepsChart"></div>
+          <div class="n-chart-labels"><span class="n-chart-lb">Sun</span><span class="n-chart-lb">Mon</span><span class="n-chart-lb">Tue</span><span class="n-chart-lb">Wed</span><span class="n-chart-lb">Thu</span><span class="n-chart-lb">Fri</span><span class="n-chart-lb">Sat</span></div>
+        </div>
+
+        <!-- Recovery section -->
+        <div class="n-section n-fade n-d8">Recovery</div>
+        <div class="n-stat-grid">
+          <div class="n-stat" onclick="nOpen('sleep')">
+            <div class="n-stat-label">Sleep Duration</div>
+            <div class="n-stat-val n-mag">6:29</div>
+            <div class="n-stat-sub">SCORE 81</div>
+          </div>
+          <div class="n-stat" onclick="nOpen('readiness')">
+            <div class="n-stat-label">Readiness</div>
+            <div class="n-stat-val n-cyan">55</div>
+            <div class="n-stat-sub">MODERATE</div>
+          </div>
+          <div class="n-stat full">
+            <div class="n-stat-label">Sleep Profile</div>
+            <div style="display:flex;align-items:center;gap:12px">
+              <span style="font-size:28px">🦔</span>
+              <div>
+                <div class="n-stat-val" style="font-size:16px;color:#fff">THE HEDGEHOG</div>
+                <div class="n-stat-sub">SHORT BURSTS // GOOD DEEP SLEEP</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sleep stages bar -->
+        <div style="margin:4px 0 20px">
+          <div style="font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:rgba(255,0,229,0.4);margin-bottom:8px">SLEEP STAGES // LAST NIGHT</div>
+          <div class="n-sleep-bar">
+            <div style="width:11%;background:#ff00e5"></div>
+            <div style="width:20%;background:#aa00cc"></div>
+            <div style="width:5%;background:#ff00e5"></div>
+            <div style="width:28%;background:#6600aa"></div>
+            <div style="width:8%;background:#330066"></div>
+            <div style="width:15%;background:#6600aa"></div>
+            <div style="width:13%;background:#330066"></div>
+          </div>
+          <div class="n-sleep-labels"><span class="n-sleep-lb">12:34 AM</span><span class="n-sleep-lb">AWAKE</span><span class="n-sleep-lb">REM</span><span class="n-sleep-lb">LIGHT</span><span class="n-sleep-lb">DEEP</span><span class="n-sleep-lb">7:46 AM</span></div>
+        </div>
+
+        <!-- Heart rate waveform -->
+        <div class="n-section n-fade n-d9">Cardiac</div>
+        <div class="n-wave">
+          <svg viewBox="0 0 300 60" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="nhrG" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#ff3366" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#ff3366" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path d="M0,35 Q15,33 30,36 T60,28 T90,40 T120,25 T150,32 T180,28 T210,35 T240,30 T270,33 T300,28" fill="none" stroke="#ff3366" stroke-width="1.5" opacity="0.8"/>
+            <path d="M0,35 Q15,33 30,36 T60,28 T90,40 T120,25 T150,32 T180,28 T210,35 T240,30 T270,33 T300,28 V60 H0Z" fill="url(#nhrG)"/>
+          </svg>
+        </div>
+        <div class="n-stat-grid" style="margin-top:8px">
+          <div class="n-stat" onclick="nOpen('heartrate')">
+            <div class="n-stat-label">Current HR</div>
+            <div class="n-stat-val n-red n-glow">81<span class="n-stat-unit">BPM</span></div>
+          </div>
+          <div class="n-stat" onclick="nOpen('heartrate')">
+            <div class="n-stat-label">Resting HR</div>
+            <div class="n-stat-val" style="color:rgba(255,51,102,0.6)">78<span class="n-stat-unit">BPM</span></div>
+          </div>
+        </div>
+
+        <!-- Health metrics -->
+        <div class="n-section n-fade n-d10">Health Metrics // 5/5 In Range</div>
+        <div class="n-row" onclick="nOpen('healthBR')"><div class="n-row-name">Breathing Rate</div><div><span class="n-row-val n-cyan">16</span><span class="n-stat-unit"> BRPM</span><span class="n-row-arrow">›</span></div></div>
+        <div class="n-row" onclick="nOpen('healthSpO2')"><div class="n-row-name">SpO₂</div><div><span class="n-row-val n-cyan">97</span><span class="n-stat-unit">%</span><span class="n-row-arrow">›</span></div></div>
+        <div class="n-row" onclick="nOpen('heartrate')"><div class="n-row-name">Resting Heart Rate</div><div><span class="n-row-val n-red">78</span><span class="n-stat-unit"> BPM</span><span class="n-row-arrow">›</span></div></div>
+        <div class="n-row" onclick="nOpen('healthHRV')"><div class="n-row-name">HRV</div><div><span class="n-row-val n-mag">32</span><span class="n-stat-unit"> MS</span><span class="n-row-arrow">›</span></div></div>
+        <div class="n-row" onclick="nOpen('healthTemp')"><div class="n-row-name">Skin Temperature</div><div><span class="n-row-val n-amber">+0.2</span><span class="n-stat-unit">°C</span><span class="n-row-arrow">›</span></div></div>
+
+        <!-- Stress & mindfulness -->
+        <div class="n-section">Stress & Mind</div>
+        <div class="n-stat-grid">
+          <div class="n-stat" onclick="nOpen('stress')">
+            <div class="n-stat-label">Stress Score</div>
+            <div class="n-stat-val n-mag n-glow">88</div>
+            <div class="n-gauge"><div class="n-gauge-fill" style="width:88%;background:#ff00e5"></div></div>
+          </div>
+          <div class="n-stat" onclick="nOpen('mindful')">
+            <div class="n-stat-label">Mindful Days</div>
+            <div class="n-stat-val" style="color:rgba(255,255,255,0.2)">0<span class="n-stat-unit">/ 5</span></div>
+            <div class="n-stat-sub">THIS WEEK</div>
+          </div>
+        </div>
+
+        <!-- Weight -->
+        <div class="n-section">Body Composition</div>
+        <div class="n-stat-grid">
+          <div class="n-stat" onclick="nOpen('weight')">
+            <div class="n-stat-label">Weight</div>
+            <div class="n-stat-val n-white">76<span class="n-stat-unit">KG</span></div>
+            <div class="n-stat-sub">GOAL 72 KG // -4 REMAINING</div>
+            <div class="n-gauge"><div class="n-gauge-fill" style="width:60%;background:linear-gradient(90deg,#00ffd5,#6bc5ff)"></div></div>
+            <div class="n-gauge-labels"><span class="n-gauge-lb">80 START</span><span class="n-gauge-lb">72 GOAL</span></div>
+          </div>
+          <div class="n-stat">
+            <div class="n-stat-label">BMI</div>
+            <div class="n-stat-val n-amber">26.3</div>
+            <div class="n-stat-sub">OVERWEIGHT</div>
+          </div>
+        </div>
+
+        <div style="text-align:center;padding:32px 0;font-size:8px;color:rgba(255,255,255,0.1);letter-spacing:3px;text-transform:uppercase">// END TRANSMISSION //</div>
+      </div>
+    </div>
+
+    <div id="nDetails"></div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// THEME SWITCHING
+// ═══════════════════════════════════════
+let currentTheme = 'fitbit';
+
+function switchTheme(theme) {
+  currentTheme = theme;
+  const app = document.getElementById('app');
+  const tabs = document.querySelectorAll('.style-tab');
+  const views = document.querySelectorAll('.theme-view');
+
+  tabs.forEach(t => t.classList.remove('active'));
+  views.forEach(v => v.classList.remove('active'));
+
+  event.currentTarget.classList.add('active');
+  document.getElementById('view-' + theme).classList.add('active');
+
+  // Reset to main in each theme
+  if (theme === 'fitbit') fShowMain();
+  if (theme === 'editorial') eShowMain();
+  if (theme === 'neon') nShowMain();
+
+  window.scrollTo(0, 0);
+}
+
+// ═══════════════════════════════════════
+// FITBIT NAVIGATION
+// ═══════════════════════════════════════
+const fPages = {
+  steps:{title:'Steps',hero:'541',unit:'steps',sub:'Goal: 5,500 · 10%',color:'var(--f-mint)',circ:440,target:397,
+    stats:[{l:'Distance',v:'0.38 km',c:'tc-m'},{l:'Calories',v:'706',c:'tc-c'},{l:'Floors',v:'0'},{l:'Active Min',v:'0',c:'tc-m'}]},
+  sleep:{title:'Sleep',hero:'81',unit:'Sleep Score',sub:'6h 29m · Good',color:'var(--f-lav)',circ:440,target:76,
+    stats:[{l:'Time Asleep',v:'6h 29m',c:'tc-l'},{l:'Time in Bed',v:'7h 12m'},{l:'Fell Asleep',v:'12:34am'},{l:'Woke Up',v:'7:46am'}]},
+  heartrate:{title:'Heart Rate',hero:'81',unit:'bpm',sub:'Resting: 78 bpm',color:'var(--f-coral)',circ:440,target:174,
+    stats:[{l:'Current',v:'81 bpm',c:'tc-c'},{l:'Resting',v:'78 bpm'},{l:"Today's Low",v:'58 bpm'},{l:"Today's High",v:'112 bpm'}]},
+  stress:{title:'Stress',hero:'88',unit:'Score',sub:'Excellent',color:'var(--f-lav)',circ:440,target:53,
+    stats:[{l:'Responsiveness',v:'Good',c:'tc-l'},{l:'Exertion',v:'Low'},{l:'Sleep Pattern',v:'Good',c:'tc-l'},{l:'Week Avg',v:'85'}]},
+  weight:{title:'Weight',hero:'76',unit:'kg',sub:'Goal: 72 kg · 4 kg remaining',color:'',circ:0,target:0,noRing:true,
+    stats:[{l:'Current',v:'76 kg'},{l:'Goal',v:'72 kg',c:'tc-m'},{l:'Lost so Far',v:'4 kg',c:'tc-m',s:'50% of goal'},{l:'BMI',v:'26.3',s:'Overweight'}]},
+  readiness:{title:'Readiness',hero:'55',unit:'Moderate',sub:'Daily Readiness Score',color:'var(--f-lav)',circ:440,target:198,
+    stats:[{l:'Activity',v:'Low',s:'Recovery day'},{l:'Sleep',v:'Good',c:'tc-l',s:'6h 29m'},{l:'HRV',v:'32 ms',s:'Below baseline'},{l:'RHR',v:'78 bpm',c:'tc-c',s:'Above baseline'}]},
+  calories:{title:'Energy',hero:'706',unit:'cal burned',sub:'Goal: 1,400 · 50%',color:'var(--f-coral)',circ:440,target:220,
+    stats:[{l:'BMR',v:'680 cal',s:'Basal'},{l:'Activity',v:'26 cal',c:'tc-c',s:'Exercise'}]},
+  cardio:{title:'Cardio Load',hero:'0',unit:'Cardio load',sub:'Target 1-16',color:'var(--f-mint)',circ:440,target:440,
+    stats:[{l:'Today',v:'0'},{l:'7-Day Total',v:'42',c:'tc-m'}]},
+  exercise:{title:'Exercise',hero:'0',unit:'of 5 days',sub:'This week',color:'',circ:0,target:0,noRing:true,
+    stats:[{l:'This Week',v:'0 days'},{l:'Last Week',v:'3 days',c:'tc-m'},{l:'Total Min',v:'0 min'},{l:'Avg/Session',v:'—'}]},
+  azm:{title:'Active Zone',hero:'0',unit:'minutes',sub:'Goal: 150/week',color:'var(--f-mint)',circ:440,target:440,
+    stats:[{l:'Today',v:'0 min'},{l:'This Week',v:'0 min'},{l:'Fat Burn',v:'0',c:'tc-g'},{l:'Cardio+Peak',v:'0',c:'tc-c'}]},
+  mindful:{title:'Mindful',hero:'0',unit:'of 5 days',sub:'This week',color:'',circ:0,target:0,noRing:true,
+    stats:[{l:'This Week',v:'0 days'},{l:'Last Week',v:'2 days',c:'tc-l'},{l:'Streak',v:'0 days',s:'Best: 5 days'}]},
+  distance:{title:'Distance',hero:'0.38',unit:'km',sub:'Today',color:'',circ:0,target:0,noRing:true,
+    stats:[{l:'Today',v:'0.38 km',c:'tc-m'},{l:'7-Day Avg',v:'3.2 km'}]},
+  hourly:{title:'Hourly',hero:'0',unit:'of 9 hours',sub:'250+ steps per hour',color:'',circ:0,target:0,noRing:true,
+    stats:[{l:'Active Hours',v:'0'},{l:'Goal',v:'9 hours'}]},
+  floors:{title:'Floors',hero:'0',unit:'floors',sub:'Goal: 10',color:'',circ:0,target:0,noRing:true,
+    stats:[{l:'Today',v:'0'},{l:'7-Day Avg',v:'4',c:'tc-m'}]},
+  healthMetrics:{title:'Health Metrics',hero:'5',unit:'of 5 in range',sub:'',color:'var(--f-blue)',circ:440,target:0,noRing:true,
+    stats:[{l:'Breathing Rate',v:'16 brpm',c:'tc-m'},{l:'SpO₂',v:'97%',c:'tc-b'},{l:'RHR',v:'78 bpm',c:'tc-c'},{l:'HRV',v:'32 ms',c:'tc-l'},{l:'Skin Temp',v:'+0.2°',c:'tc-g'}]},
+  healthBR:{title:'Breathing Rate',hero:'16',unit:'brpm',sub:'In range',color:'var(--f-mint)',circ:440,target:200,
+    stats:[{l:'Current',v:'16 brpm',c:'tc-m'},{l:'Your Range',v:'12-20 brpm'}]},
+  healthSpO2:{title:'Blood Oxygen',hero:'97',unit:'%',sub:'Normal',color:'var(--f-blue)',circ:440,target:53,
+    stats:[{l:'Current',v:'97%',c:'tc-b'},{l:'Your Range',v:'95-100%'}]},
+  healthHRV:{title:'HRV',hero:'32',unit:'ms',sub:'In range',color:'var(--f-lav)',circ:440,target:286,
+    stats:[{l:'7-Day Avg',v:'35 ms',c:'tc-l'},{l:'30-Day Avg',v:'38 ms'}]},
+  healthTemp:{title:'Skin Temp',hero:'+0.2',unit:'°C',sub:'Normal variation',color:'var(--f-gold)',circ:440,target:220,
+    stats:[{l:'Today',v:'+0.2°C',c:'tc-g'},{l:'Baseline',v:'±1.0°C'}]},
+};
+
+let fHistory = ['main'];
+
+function fOpen(page) {
+  const data = fPages[page];
+  if (!data) return;
+  const container = document.getElementById('fDetails');
+  document.getElementById('fMain').classList.add('hid');
+
+  let statsHtml = '<div class="f-dgrid">';
+  data.stats.forEach(s => {
+    statsHtml += `<div class="f-dstat${s.full?' full':''}"><div class="f-dl">${s.l}</div><div class="f-ddv ${s.c||''}">${s.v}</div>${s.s?'<div class="f-dds">'+s.s+'</div>':''}</div>`;
+  });
+  statsHtml += '</div>';
+
+  let heroHtml = '';
+  if (!data.noRing && data.circ) {
+    heroHtml = `<div class="f-dhero"><div class="f-dring"><svg viewBox="0 0 160 160"><circle cx="80" cy="80" r="70" fill="none" stroke="var(--f-ring-track)" stroke-width="8"/><circle cx="80" cy="80" r="70" fill="none" stroke="${data.color}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${data.circ}" stroke-dashoffset="${data.circ}" class="ring-a" style="--circ:${data.circ};--target:${data.target}"/></svg><div class="f-dring-c"><div class="f-dv" style="color:${data.color}">${data.hero}</div><div class="f-du">${data.unit}</div></div></div><div class="f-dsub">${data.sub}</div></div>`;
+  } else {
+    heroHtml = `<div class="f-dhero" style="padding-bottom:12px"><div style="font-size:48px;font-family:'Outfit',sans-serif;font-weight:700;letter-spacing:-2px">${data.hero} <span style="font-size:20px;color:var(--f-t2);font-weight:400">${data.unit}</span></div><div class="f-dsub" style="margin-top:4px">${data.sub}</div></div>`;
+  }
+
+  container.innerHTML = `<div class="f-detail act" id="fDetailPage"><div class="f-content f-enter">${heroHtml}${statsHtml}</div></div>`;
+
+  document.getElementById('fBack').classList.add('vis');
+  document.getElementById('fTitle').textContent = data.title;
+  fHistory.push(page);
+  window.scrollTo(0, 0);
+}
+
+function fGoBack() {
+  fHistory.pop();
+  fShowMain();
+}
+
+function fShowMain() {
+  document.getElementById('fDetails').innerHTML = '';
+  document.getElementById('fMain').classList.remove('hid');
+  document.getElementById('fBack').classList.remove('vis');
+  document.getElementById('fTitle').textContent = 'Today';
+  fHistory = ['main'];
+  window.scrollTo(0, 0);
+}
+
+// ═══════════════════════════════════════
+// EDITORIAL NAVIGATION (reuses fPages data)
+// ═══════════════════════════════════════
+function eOpen(page) {
+  const data = fPages[page];
+  if (!data) return;
+  const container = document.getElementById('eDetails');
+  document.getElementById('eMain').classList.add('hid');
+  document.getElementById('eBack').classList.add('vis');
+
+  let statsHtml = '';
+  data.stats.forEach(s => {
+    statsHtml += `<div class="e-row"><div><div class="e-row-name">${s.l}</div></div><div><div class="e-row-val">${s.v}</div>${s.s?'<div class="e-row-sub">'+s.s+'</div>':''}</div></div>`;
+  });
+
+  container.innerHTML = `<div class="e-detail act"><div class="e-content" style="animation:fadeUp 0.3s ease">
+    <div class="e-detail-hero"><div class="e-detail-num">${data.hero}<span class="e-detail-unit"> ${data.unit}</span></div><div class="e-detail-sub">${data.sub}</div></div>
+    ${statsHtml}
+    <div class="e-footer">— End —</div>
+  </div></div>`;
+  window.scrollTo(0, 0);
+}
+
+function eGoBack() { eShowMain(); }
+
+function eShowMain() {
+  document.getElementById('eDetails').innerHTML = '';
+  document.getElementById('eMain').classList.remove('hid');
+  document.getElementById('eBack').classList.remove('vis');
+  window.scrollTo(0, 0);
+}
+
+// ═══════════════════════════════════════
+// NEON NAVIGATION (reuses fPages data)
+// ═══════════════════════════════════════
+function nOpen(page) {
+  const data = fPages[page];
+  if (!data) return;
+  const container = document.getElementById('nDetails');
+  document.getElementById('nMain').classList.add('hid');
+  document.getElementById('nBack').classList.add('vis');
+
+  let statsHtml = '<div class="n-stat-grid">';
+  data.stats.forEach(s => {
+    const col = s.c ? (s.c==='tc-m'?'n-cyan':s.c==='tc-l'?'n-mag':s.c==='tc-c'?'n-red':s.c==='tc-g'?'n-amber':s.c==='tc-b'?'n-cyan':'') : '';
+    statsHtml += `<div class="n-stat"><div class="n-stat-label">${s.l}</div><div class="n-stat-val ${col}">${s.v}</div>${s.s?'<div class="n-stat-sub">'+s.s.toUpperCase()+'</div>':''}</div>`;
+  });
+  statsHtml += '</div>';
+
+  let ringHtml = '';
+  if (!data.noRing && data.circ) {
+    const neonColor = data.color.includes('mint')?'#00ffd5':data.color.includes('lav')?'#ff00e5':data.color.includes('coral')?'#ff3366':data.color.includes('gold')?'#ffaa00':data.color.includes('blue')?'#00ffd5':'#00ffd5';
+    ringHtml = `<div class="n-ring-wrap"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="6"/><circle cx="60" cy="60" r="52" fill="none" stroke="${neonColor}" stroke-width="6" stroke-linecap="round" stroke-dasharray="327" stroke-dashoffset="${327 - (327 * (1 - data.target / data.circ))}" opacity="0.8" style="filter:drop-shadow(0 0 4px ${neonColor})"/></svg><div class="n-ring-center"><div class="n-ring-val n-glow" style="color:${neonColor}">${data.hero}</div><div class="n-ring-lb">${data.unit}</div></div></div>`;
+  } else {
+    ringHtml = `<div class="n-detail-hero"><div class="n-detail-num n-cyan n-glow">${data.hero}<span style="font-size:16px;color:rgba(255,255,255,0.3);font-weight:400"> ${data.unit}</span></div><div class="n-detail-sub">${data.sub.toUpperCase()}</div></div>`;
+  }
+
+  container.innerHTML = `<div class="n-detail act"><div class="n-content n-fade">
+    ${ringHtml}
+    ${statsHtml}
+  </div></div>`;
+  window.scrollTo(0, 0);
+}
+
+function nGoBack() { nShowMain(); }
+
+function nShowMain() {
+  document.getElementById('nDetails').innerHTML = '';
+  document.getElementById('nMain').classList.remove('hid');
+  document.getElementById('nBack').classList.remove('vis');
+  window.scrollTo(0, 0);
+}
+
+// ═══════════════════════════════════════
+// CHARTS
+// ═══════════════════════════════════════
+function makeEditorialChart(id, data) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const max = Math.max(...data);
+  el.innerHTML = '';
+  data.forEach((v, i) => {
+    const bar = document.createElement('div');
+    bar.className = 'e-chart-bar' + (i === data.length - 1 ? ' today' : '');
+    bar.style.height = (max > 0 ? (v / max) * 50 + 10 : 10) + 'px';
+    if (v === 0) bar.style.background = '#eee';
+    el.appendChild(bar);
+  });
+}
+
+function makeNeonChart(id, data, color) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const max = Math.max(...data);
+  el.innerHTML = '';
+  data.forEach((v, i) => {
+    const bar = document.createElement('div');
+    bar.className = 'n-chart-bar';
+    bar.style.height = (max > 0 ? (v / max) * 40 + 8 : 8) + 'px';
+    bar.style.background = v > 0 ? color : 'rgba(255,255,255,0.03)';
+    bar.style.color = color;
+    if (i === data.length - 1) bar.style.opacity = '0.5';
+    el.appendChild(bar);
+  });
+}
+
+const stepsWeek = [4200, 6100, 3800, 5500, 7200, 4900, 541];
+makeEditorialChart('eStepsChart', stepsWeek);
+makeNeonChart('nStepsChart', stepsWeek, '#00ffd5');
+
+// Neon time update
+function updateNeonTime() {
+  const el = document.getElementById('neonTime');
+  if (el) {
+    const now = new Date();
+    const h = now.getHours().toString().padStart(2, '0');
+    const m = now.getMinutes().toString().padStart(2, '0');
+    el.textContent = h + ':' + m + ' UTC';
+  }
+}
+updateNeonTime();
+setInterval(updateNeonTime, 60000);
+
+// Auto-switch theme from URL hash
+const hash = location.hash.replace('#','');
+if (hash && ['fitbit','editorial','neon'].includes(hash)) {
+  currentTheme = hash;
+  document.querySelectorAll('.style-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.theme-view').forEach(v => v.classList.remove('active'));
+  const idx = {fitbit:0,editorial:1,neon:2}[hash];
+  document.querySelectorAll('.style-tab')[idx].classList.add('active');
+  document.getElementById('view-' + hash).classList.add('active');
+}
+
+// Swipe back gesture
+let touchStartX = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+document.addEventListener('touchend', e => {
+  const diff = e.changedTouches[0].clientX - touchStartX;
+  if (diff > 80 && touchStartX < 50) {
+    if (currentTheme === 'fitbit') fGoBack();
+    if (currentTheme === 'editorial') eGoBack();
+    if (currentTheme === 'neon') nGoBack();
+  }
+});
+</script>
+</body>
+</html>
