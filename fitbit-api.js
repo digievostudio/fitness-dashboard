@@ -148,17 +148,43 @@ class FitbitAPI {
 
   async _fetch(path) {
     if (!this.accessToken) throw new Error('Not authenticated');
-    const url = `${this.API_BASE}${path}`;
-    let res = await fetch(url, {
-      headers: { 'Authorization': `Bearer ${this.accessToken}`, 'Accept': 'application/json' }
-    });
+    
+    // CORS-blocked endpoints that need to be routed through the worker
+    const corsBlockedPatterns = ['/spo2/', '/hrv/', '/br/', '/temp/skin/', '/cardioscore/'];
+    const needsProxy = corsBlockedPatterns.some(pattern => path.includes(pattern));
+    
+    let url;
+    let headers;
+    
+    if (needsProxy) {
+      // Route through Cloudflare Worker proxy
+      url = `https://fitbit-cors-proxy.njandu.workers.dev${path}`;
+      headers = { 
+        'Authorization': `Bearer ${this.accessToken}`, 
+        'Accept': 'application/json',
+        'X-Fitbit-Path': path
+      };
+    } else {
+      // Direct Fitbit API call
+      url = `${this.API_BASE}${path}`;
+      headers = { 
+        'Authorization': `Bearer ${this.accessToken}`, 
+        'Accept': 'application/json' 
+      };
+    }
+    
+    let res = await fetch(url, { headers });
+    
     // Auto-refresh on 401
     if (res.status === 401 && this.refreshToken) {
       const refreshed = await this._refreshAccessToken();
       if (refreshed) {
-        res = await fetch(url, {
-          headers: { 'Authorization': `Bearer ${this.accessToken}`, 'Accept': 'application/json' }
-        });
+        if (needsProxy) {
+          headers.Authorization = `Bearer ${this.accessToken}`;
+        } else {
+          headers.Authorization = `Bearer ${this.accessToken}`;
+        }
+        res = await fetch(url, { headers });
       } else {
         this.clearTokens(); throw new Error('Token expired');
       }
