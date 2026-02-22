@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Health Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,13 +15,14 @@
     html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:hidden}
     body{min-height:100vh;min-height:100dvh}
     .app{max-width:430px;margin:0 auto;min-height:100vh;min-height:100dvh;position:relative;overflow-x:hidden}
+    @media(min-width:600px){.app{max-width:100%}}
 
     /* ═══════════════════════════════════════
        STYLE TABS
     ═══════════════════════════════════════ */
     .style-tabs{
-      position:fixed;top:0;left:50%;transform:translateX(-50%);
-      width:100%;max-width:430px;z-index:200;
+      position:fixed;top:0;left:0;right:0;
+      width:100%;z-index:200;
       display:flex;gap:0;
       background:rgba(10,15,13,0.95);
       backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
@@ -194,8 +195,8 @@
     .f-wfill{height:100%;border-radius:3px}
 
     .f-nav{
-      position:fixed;bottom:0;left:50%;transform:translateX(-50%);
-      width:100%;max-width:430px;display:flex;justify-content:space-around;align-items:center;
+      position:fixed;bottom:0;left:0;right:0;
+      width:100%;display:flex;justify-content:center;align-items:center;
       padding:10px 0 calc(10px + env(safe-area-inset-bottom,0px));
       background:rgba(10,15,13,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
       border-top:1px solid rgba(255,255,255,0.04);z-index:100;
@@ -547,6 +548,135 @@
        GLOBAL TRANSITION
     ═══════════════════════════════════════ */
     .app{transition:background 0.4s,color 0.4s}
+
+    /* ═══════════════════════════════════════
+       RESPONSIVE — TABLET (≥600px)
+    ═══════════════════════════════════════ */
+    @media(min-width:600px){
+      .app{max-width:100%!important}
+
+      /* Style tabs — centered pills */
+      .style-tabs{
+        max-width:100%!important;justify-content:center;gap:4px;padding:8px 24px;
+      }
+      .style-tab{
+        flex:none;padding:10px 24px;border-radius:8px;border-bottom:none!important;
+        font-size:12px;
+      }
+      .style-tab.active{background:rgba(255,255,255,0.08)}
+      .theme-editorial .style-tab.active{background:rgba(0,0,0,0.06)}
+      .theme-neon .style-tab.active{background:rgba(0,255,213,0.08)}
+
+      /* ── Fitbit tablet ── */
+      .f-content{max-width:720px;margin:0 auto;padding:12px 24px 80px}
+      .f-header{max-width:720px;margin:0 auto}
+
+      /* Cards grid — 2 columns */
+      .f-cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+      .f-cards-grid .f-card{margin-bottom:0}
+      .f-cards-grid .f-banner{grid-column:1/-1;margin-bottom:0}
+
+      /* Detail grids — 3 or 4 col */
+      .f-dgrid{grid-template-columns:repeat(3,1fr)}
+
+      /* Bottom nav — wider */
+      .f-nav{max-width:720px!important}
+
+      /* ── Editorial tablet ── */
+      .theme-editorial .e-content{max-width:720px;margin:0 auto;padding:12px 32px 40px}
+      .e-hero-grid{grid-template-columns:repeat(4,1fr)}
+      .e-hero-cell:nth-child(2n){border-right:1px solid #eee}
+      .e-hero-cell:nth-child(n+3){border-top:none}
+      .e-hero-cell:last-child{border-right:none}
+      .e-stat3{grid-template-columns:repeat(3,1fr)}
+      .e-rows-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 32px}
+      .e-chart{height:80px}
+
+      /* ── Neon tablet ── */
+      .n-content{max-width:720px;margin:0 auto;padding:12px 24px 40px}
+      .n-stat-grid{grid-template-columns:repeat(3,1fr)}
+      .n-chart{height:70px}
+    }
+
+    /* ═══════════════════════════════════════
+       RESPONSIVE — DESKTOP (≥960px)
+    ═══════════════════════════════════════ */
+    @media(min-width:960px){
+      /* Style tabs */
+      .style-tabs{padding:10px 40px}
+      .style-tab{padding:10px 32px;font-size:12px;letter-spacing:1px}
+
+      /* ── Fitbit desktop ── */
+      .f-content{max-width:1080px;padding:16px 40px 40px}
+      .f-header{max-width:1080px}
+
+      /* Hero — side by side: ring + quick stats */
+      .f-hero{flex-direction:row;gap:40px;padding:32px 0;align-items:center;justify-content:center}
+      .f-quick{gap:36px}
+      .f-banner{max-width:720px;margin-left:auto;margin-right:auto}
+
+      /* Cards — 3 columns */
+      .f-cards-grid{grid-template-columns:repeat(3,1fr);gap:12px}
+
+      /* Detail — wider grid */
+      .f-dgrid{grid-template-columns:repeat(4,1fr);gap:12px}
+      .f-dhero{flex-direction:row;gap:32px;align-items:center}
+      .f-dring{margin-bottom:0}
+
+      /* Hide bottom nav on desktop */
+      .f-nav{display:none!important}
+      .f-content{padding-bottom:40px!important}
+
+      /* Section labels bigger */
+      .f-section{font-size:17px;padding:28px 4px 12px}
+
+      /* Cards hover effect instead of active */
+      .f-card:hover{background:var(--f-card-h);transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,0.3)}
+      .f-card:active{transform:translateY(-1px)}
+
+      /* ── Editorial desktop ── */
+      .theme-editorial .e-content{max-width:960px;margin:0 auto;padding:20px 48px 60px}
+      .e-headline{font-size:48px}
+      .e-hero-grid{grid-template-columns:repeat(4,1fr)}
+      .e-hero-num{font-size:42px}
+      .e-rows-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 48px}
+      .e-row-name{font-size:16px}
+      .e-row-val{font-size:22px}
+      .e-quote{font-size:15px;padding:20px 28px;max-width:640px}
+      .e-chart{height:100px}
+      .e-detail-num{font-size:80px}
+      .e-tags .e-tag{font-size:12px;padding:8px 18px}
+      .e-tag:hover{transform:translateY(-1px)}
+      .e-stat3{grid-template-columns:repeat(3,1fr)}
+
+      /* ── Neon desktop ── */
+      .n-content{max-width:1080px;margin:0 auto;padding:16px 40px 40px}
+      .n-stat-grid{grid-template-columns:repeat(3,1fr);gap:8px}
+      .n-stat-val{font-size:32px}
+      .n-chart{height:80px}
+      .n-wave{height:80px}
+      .n-row{padding:12px 0}
+      .n-row-name{font-size:11px}
+      .n-row-val{font-size:16px}
+      .n-stat:hover{background:rgba(0,255,213,0.06);border-color:rgba(0,255,213,0.2);transform:translateY(-2px)}
+      /* Neon primary strip wider on desktop */
+      .n-primary-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+      .n-cardio-bar{display:flex}
+    }
+
+    /* ═══════════════════════════════════════
+       RESPONSIVE — WIDE DESKTOP (≥1280px)
+    ═══════════════════════════════════════ */
+    @media(min-width:1280px){
+      .f-content{max-width:1200px}
+      .f-cards-grid{grid-template-columns:repeat(4,1fr)}
+      .f-dgrid{grid-template-columns:repeat(4,1fr)}
+
+      .theme-editorial .e-content{max-width:1080px}
+
+      .n-content{max-width:1200px}
+      .n-stat-grid{grid-template-columns:repeat(4,1fr)}
+    }
   </style>
 </head>
 <body>
@@ -595,6 +725,7 @@
         <div class="f-banner" style="margin-top:16px"><div class="f-banner-ic">✦</div><div class="f-banner-tx"><strong style="color:var(--f-t1)">Recovery requires rest days</strong><br>You've been working hard, but overtraining can increase strain. Give your body a break.</div></div>
 
         <div class="f-section">Activity</div>
+        <div class="f-cards-grid">
         <div class="f-card" onclick="fOpen('cardio')"><div class="f-card-l"><div class="f-card-t">Cardio load</div><div class="f-card-v tc-m">0</div><div class="f-card-s">Today · Target 1-16</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/></svg></div></div>
         <div class="f-card" onclick="fOpen('exercise')"><div class="f-card-l"><div class="f-card-t">Exercise days</div><div class="f-card-v">0 <span class="u">of 5</span></div><div class="f-card-s">This week</div></div><div class="f-weekly"><div class="f-bars"><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div><div class="f-bar" style="background:var(--f-mint-d)"></div></div><div class="f-days"><div class="f-day now">S</div><div class="f-day">M</div><div class="f-day">T</div><div class="f-day">W</div><div class="f-day">T</div><div class="f-day">F</div><div class="f-day">S</div></div></div></div>
         <div class="f-card" onclick="fOpen('azm')"><div class="f-card-l"><div class="f-card-t">Active Zone Min</div><div class="f-card-v tc-m">0</div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/></svg></div></div>
@@ -603,20 +734,27 @@
         <div class="f-card" onclick="fOpen('distance')"><div class="f-card-l"><div class="f-card-t">Distance</div><div class="f-card-v tc-m">0.38 <span class="u">km</span></div><div class="f-card-s">Today</div></div><div style="font-size:28px;opacity:0.4">📍</div></div>
         <div class="f-card" onclick="fOpen('calories')"><div class="f-card-l"><div class="f-card-t">Energy burned</div><div class="f-card-v tc-c">706 <span class="u">cal</span></div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-coral)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:69"/></svg></div></div>
         <div class="f-card" onclick="fOpen('floors')"><div class="f-card-l"><div class="f-card-t">Floors</div><div class="f-card-v tc-m">0</div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/></svg></div></div>
+        </div><!-- /f-cards-grid activity -->
 
         <div class="f-section">Recovery</div>
+        <div class="f-cards-grid">
         <div class="f-card" onclick="fOpen('sleep')"><div class="f-card-l"><div class="f-card-t">Sleep duration</div><div class="f-card-v tc-l">6<span class="u">h</span> 29<span class="u">m</span></div><div class="f-card-s">Today · Sleep Score: 81</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-lav)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:24"/></svg></div></div>
         <div class="f-card"><div class="f-card-l" style="flex-direction:row;align-items:center;gap:12px"><span style="font-size:24px">🌙</span><div><div class="f-card-t">Your sleep profile</div><div style="font-size:16px;font-weight:600;margin-top:2px">The Hedgehog</div></div></div></div>
         <div class="f-card" onclick="fOpen('readiness')"><div class="f-card-l"><div class="f-card-t">Daily readiness</div><div class="f-card-v tc-l">55</div><div class="f-card-s">Today · Moderate</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-lav)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:62"/></svg></div></div>
+        </div><!-- /f-cards-grid recovery -->
 
         <div class="f-section">Stress & mindfulness</div>
+        <div class="f-cards-grid">
         <div class="f-card" onclick="fOpen('mindful')"><div class="f-card-l"><div class="f-card-t">Mindful days</div><div class="f-card-v">0 <span class="u">of 5</span></div><div class="f-card-s">This week</div></div><div class="f-weekly"><div class="f-bars"><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div><div class="f-bar" style="background:var(--f-lav-d)"></div></div><div class="f-days"><div class="f-day now">S</div><div class="f-day">M</div><div class="f-day">T</div><div class="f-day">W</div><div class="f-day">T</div><div class="f-day">F</div><div class="f-day">S</div></div></div></div>
         <div class="f-card" onclick="fOpen('stress')"><div class="f-card-l"><div class="f-card-t">Stress management score</div><div class="f-card-v tc-l">88</div><div class="f-card-s">Today</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-lav)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:17"/></svg></div></div>
+        </div><!-- /f-cards-grid stress -->
 
         <div class="f-section">Health</div>
+        <div class="f-cards-grid">
         <div class="f-card" onclick="fOpen('healthMetrics')"><div class="f-card-l"><div class="f-card-t">Health metrics</div><div class="f-card-v tc-b">5 <span class="u">of 5</span></div><div class="f-card-s">In personal range</div></div><div style="display:flex;gap:2px;align-items:flex-end"><div style="width:6px;height:16px;background:var(--f-blue);border-radius:2px"></div><div style="width:6px;height:22px;background:var(--f-blue);border-radius:2px"></div><div style="width:6px;height:18px;background:var(--f-blue);border-radius:2px"></div><div style="width:6px;height:26px;background:var(--f-blue);border-radius:2px"></div><div style="width:6px;height:20px;background:var(--f-blue);border-radius:2px"></div></div></div>
         <div class="f-card" onclick="fOpen('heartrate')"><div class="f-card-l"><div class="f-card-t">Heart rate</div><div class="f-card-v tc-c">81 <span class="u">bpm</span></div><div class="f-card-s">78 resting</div></div><div class="f-ring-sm"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-ring-track)" stroke-width="5"/><circle cx="26" cy="26" r="22" fill="none" stroke="var(--f-coral)" stroke-width="5" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138" class="ring-a" style="--circ:138;--target:42"/></svg></div></div>
         <div class="f-card" onclick="fOpen('weight')"><div class="f-card-l"><div class="f-card-t">Weight</div><div class="f-card-v">76 <span class="u">kg</span></div><div class="f-card-s">4 kg left to goal</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><span style="font-size:12px;color:var(--f-mint)">↓ 72 kg goal</span></div></div>
+        </div><!-- /f-cards-grid health -->
       </div>
     </div>
 
@@ -672,6 +810,7 @@
         <!-- Activity -->
         <div class="e-divider"><div class="e-divider-line"></div><div class="e-divider-text">Activity</div><div class="e-divider-line"></div></div>
 
+        <div class="e-rows-grid">
         <div class="e-row" onclick="eOpen('cardio')"><div><div class="e-row-name">Cardio Load</div></div><div><div class="e-row-val">0<span class="e-row-unit"></span></div><div class="e-row-sub">target 1–16</div></div></div>
         <div class="e-row" onclick="eOpen('exercise')"><div><div class="e-row-name">Exercise Days</div></div><div><div class="e-row-val">0<span class="e-row-unit"> of 5</span></div><div class="e-row-sub">this week</div></div></div>
         <div class="e-row" onclick="eOpen('azm')"><div><div class="e-row-name">Active Zone Minutes</div></div><div><div class="e-row-val">0</div><div class="e-row-sub">today</div></div></div>
@@ -680,6 +819,7 @@
         <div class="e-row" onclick="eOpen('distance')"><div><div class="e-row-name">Distance</div></div><div><div class="e-row-val">0.38<span class="e-row-unit"> km</span></div></div></div>
         <div class="e-row" onclick="eOpen('calories')"><div><div class="e-row-name">Energy Burned</div></div><div><div class="e-row-val e-accent">706<span class="e-row-unit"> cal</span></div></div></div>
         <div class="e-row" onclick="eOpen('floors')"><div><div class="e-row-name">Floors</div></div><div><div class="e-row-val">0</div></div></div>
+        </div>
 
         <div class="e-chart-wrap">
           <div class="e-chart-title">Steps — This Week</div>
@@ -741,7 +881,7 @@
         </div>
 
         <!-- Primary readouts — compact 4-col strip -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px" class="n-fade n-d2">
+        <div class="n-primary-strip n-fade n-d2" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px">
           <div style="text-align:center;cursor:pointer;padding:10px 4px;background:rgba(0,255,213,0.03);border:1px solid rgba(0,255,213,0.08)" onclick="nOpen('readiness')">
             <div style="font-size:7px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.25);margin-bottom:6px">Ready</div>
             <div style="font-size:22px;font-weight:700;color:#00ffd5;text-shadow:0 0 6px #00ffd5,0 0 15px #00ffd5;line-height:1">55</div>
