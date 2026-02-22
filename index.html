@@ -1266,49 +1266,60 @@
       });
     });
     
-    // Load real data
+    // Load real data — sequential batches to avoid 429 rate limits
     async function loadData() {
       try {
-        const [profile, activity, sleep, heartRate, hrv, spo2] = await Promise.all([
+        // Batch 1: Core data (profile, activity, sleep)
+        const [profile, activity, sleep] = await Promise.all([
           api.getProfile(),
           api.getActivitySummary(),
           api.getSleep(),
-          api.getHeartRateIntraday(),
-          api.getHRV().catch(() => null),
-          api.getSpO2().catch(() => null)
         ]);
+
+        currentData = { profile, activity, sleep, heartRate: null, hrv: null, spo2: null };
         
-        currentData = {
-          profile,
-          activity,
-          sleep,
-          heartRate,
-          hrv,
-          spo2
-        };
-        
-        // Also load time series data
+        // Show app immediately with core data
+        showApp(profile.user);
+
+        // Batch 2: Heart rate (can 429 if burst)
+        currentData.heartRate = await api.getHeartRateIntraday().catch(e => { console.warn('HR intraday:', e.message); return null; });
+
+        // Batch 3: Time series
         const today = api.getTodayDate();
         const week = api.getDateDaysAgo(7);
-        const month = api.getDateDaysAgo(30);
-        
-        const [stepsWeek, sleepWeek, weight, stepsIntraday] = await Promise.all([
-          api.getStepsTimeSeries(week, today),
-          api.getSleepRange(week, today),
-          api.getWeightLog().catch(() => null),
-          api.getStepsIntraday()
+        const [stepsWeek, sleepWeek] = await Promise.all([
+          api.getStepsTimeSeries(week, today).catch(() => null),
+          api.getSleepRange(week, today).catch(() => null),
         ]);
-        
         currentData.stepsWeek = stepsWeek;
         currentData.sleepWeek = sleepWeek;
-        currentData.weight = weight;
+
+        // Batch 4: Intraday + weight (lower priority)
+        const [stepsIntraday, weight] = await Promise.all([
+          api.getStepsIntraday().catch(() => null),
+          api.getWeightLog().catch(() => null),
+        ]);
         currentData.stepsIntraday = stepsIntraday;
-        
-        showApp(profile.user);
+        currentData.weight = weight;
+
+        // Batch 5: Optional health metrics (these often CORS-fail, that's OK)
+        const [hrv, spo2] = await Promise.all([
+          api.getHRV().catch(() => null),
+          api.getSpO2().catch(() => null),
+        ]);
+        currentData.hrv = hrv;
+        currentData.spo2 = spo2;
+
         renderAllThemes();
       } catch (error) {
         console.error('Failed to load data:', error);
-        alert('Failed to load data. Please try reconnecting.');
+        if (error.message === 'Token expired') {
+          alert('Session expired. Please reconnect.');
+          api.clearTokens();
+          location.reload();
+        } else {
+          alert('Failed to load core data. Try refreshing.');
+        }
       }
     }
     
