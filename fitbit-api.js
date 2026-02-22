@@ -120,35 +120,43 @@ const FitbitAPI = (() => {
   async function fetchAllData(skipCache) {
     if (!skipCache) { const c = getCachedData(); if (c) return c; }
     const d = today();
-    const uid = localStorage.getItem(STORAGE_USER) || '-';
+    // Always use '-' for current user — using actual user ID causes CORS issues
+    const uid = '-';
 
+    // Batch 1: Core data (profile, activity, steps, heart, sleep)
     const [
       profile, activitySummary, activityGoals,
-      steps7d, steps30d, intradaySteps,
+      steps7d, steps30d,
       heartDay, intradayHR,
-      sleepDay, sleep7d,
-      weight, spo2, brRate, tempSkin, cardioScore,
+      sleepDay, sleep7d
+    ] = await Promise.allSettled([
+      apiFetch(`/1/user/-/profile.json`),
+      apiFetch(`/1/user/-/activities/date/${d}.json`),
+      apiFetch(`/1/user/-/activities/goals/daily.json`),
+      apiFetch(`/1/user/-/activities/steps/date/${d}/7d.json`),
+      apiFetch(`/1/user/-/activities/steps/date/${d}/30d.json`),
+      apiFetch(`/1/user/-/activities/heart/date/${d}/1d.json`),
+      apiFetch(`/1/user/-/activities/heart/date/${d}/1d/1min.json`),
+      apiFetch(`/1.2/user/-/sleep/date/${d}.json`),
+      apiFetch(`/1.2/user/-/sleep/date/${daysAgo(6)}/${d}.json`),
+    ]);
+
+    // Batch 2: Secondary data (body, health metrics, extras)
+    const [
+      intradaySteps, weight,
+      spo2, brRate, tempSkin, cardioScore,
       lifetime, activityLog, badges, hrv
     ] = await Promise.allSettled([
-      apiFetch(`/1/user/${uid}/profile.json`),
-      apiFetch(`/1/user/${uid}/activities/date/${d}.json`),
-      apiFetch(`/1/user/${uid}/activities/goals/daily.json`),
-      apiFetch(`/1/user/${uid}/activities/steps/date/${d}/7d.json`),
-      apiFetch(`/1/user/${uid}/activities/steps/date/${d}/30d.json`),
-      apiFetch(`/1/user/${uid}/activities/steps/date/${d}/1d/15min.json`),
-      apiFetch(`/1/user/${uid}/activities/heart/date/${d}/1d.json`),
-      apiFetch(`/1/user/${uid}/activities/heart/date/${d}/1d/1min.json`),
-      apiFetch(`/1.2/user/${uid}/sleep/date/${d}.json`),
-      apiFetch(`/1.2/user/${uid}/sleep/date/${daysAgo(6)}/${d}.json`),
-      apiFetch(`/1/user/${uid}/body/log/weight/date/${d}/30d.json`),
-      apiFetch(`/1/user/${uid}/spo2/date/${d}.json`),
-      apiFetch(`/1/user/${uid}/br/date/${d}.json`),
-      apiFetch(`/1/user/${uid}/temp/skin/date/${d}.json`),
-      apiFetch(`/1/user/${uid}/cardioscore/date/${d}.json`),
-      apiFetch(`/1/user/${uid}/activities.json`),
-      apiFetch(`/1/user/${uid}/activities/list.json?afterDate=${daysAgo(30)}&sort=desc&limit=10&offset=0`),
-      apiFetch(`/1/user/${uid}/badges.json`),
-      apiFetch(`/1/user/${uid}/hrv/date/${d}.json`),
+      apiFetch(`/1/user/-/activities/steps/date/${d}/1d/15min.json`),
+      apiFetch(`/1/user/-/body/log/weight/date/${d}/30d.json`),
+      apiFetch(`/1/user/-/spo2/date/${d}.json`),
+      apiFetch(`/1/user/-/br/date/${d}.json`),
+      apiFetch(`/1/user/-/temp/skin/date/${d}.json`),
+      apiFetch(`/1/user/-/cardioscore/date/${d}.json`),
+      apiFetch(`/1/user/-/activities.json`),
+      apiFetch(`/1/user/-/activities/list.json?afterDate=${daysAgo(30)}&sort=desc&limit=10&offset=0`),
+      apiFetch(`/1/user/-/badges.json`),
+      apiFetch(`/1/user/-/hrv/date/${d}.json`),
     ]);
 
     const v = r => r.status === 'fulfilled' ? r.value : null;
